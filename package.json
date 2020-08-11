@@ -1,0 +1,17 @@
+{
+  "name": "koha-plugin-curbside-pickup",
+  "description": "Koha Curbside pickup",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bywatersolutions/koha-plugin-curbside-pickup.git"
+  },
+  "author": "Kyle M Hall <kyle@bywatersolutions.com>",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/bywatersolutions/koha-plugin-curbside-pickup/issues"
+  },
+  "homepage": "https://github.com/bywatersolutions/koha-plugin-curbside-pickup#readme",
+}

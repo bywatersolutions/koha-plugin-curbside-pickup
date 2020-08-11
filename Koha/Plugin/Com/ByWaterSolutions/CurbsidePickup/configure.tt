@@ -1,0 +1,192 @@
+[% USE KohaDates %]
+[% SET footerjs = 1 %]
+[% INCLUDE 'doc-head-open.inc' %]
+ <title>Koha: Curbside pickup: Configuration</title>
+[% INCLUDE 'doc-head-close.inc' %]
+</head>
+<body>
+[% INCLUDE 'header.inc' %]
+[% INCLUDE 'cat-search.inc' %]
+
+<div id="breadcrumbs"><a href="/cgi-bin/koha/mainpage.pl">Home</a> &rsaquo; <a href="/cgi-bin/koha/plugins/plugins-home.pl">Plugins</a> &rsaquo; Curbside pickup &rsaquo; Configuration</div>
+
+<div id="doc3">
+    <form method="post">
+        <!-- Always pass these two parameters so the plugin system knows what to execute! -->
+        <input type="hidden" name="class" value="[% CLASS %]"/>
+        <input type="hidden" name="method" value="[% METHOD %]"/>
+
+        <div id="abouttabs" class="toptabs">
+            <ul>
+                [% FOREACH l IN libraries %]
+                    <li><a href="#conf-[% l.branchcode | html %]">[% l.branchname | html %]</a></li>
+                [% END %]
+            </ul>
+
+            [% FOREACH l IN libraries %]
+                [% SET branchcode = l.branchcode %]
+                <div id="conf-[% l.branchcode | html %]">
+                    <fieldset class="rows">
+                        <legend>Options for <i>[% l.branchname %]</i></legend>
+
+                        <ol>
+                            <li>
+                                <label for="enable-[% branchcode | html %]">Enable: </label>
+                                [% IF policies.$branchcode.enabled %]
+                                    <input name="enable-[% branchcode | html %]" id="enable-[% branchcode | html %]" value="1" type="checkbox" checked>
+                                [% ELSE %]
+                                    <input name="enable-[% branchcode | html %]" id="enable-[% branchcode | html %]" value="1" type="checkbox">
+                                [% END %]
+                                <span class="hint">Enable curbvside pickup for <i>[% l.branchname | html %]</i>.</span>
+                            </li>
+
+                            <li>
+                                <label for="interval-[% branchcode | html %]">Pickup interval: </label>
+                                <input name="interval-[% branchcode | html %]" id="interval-[% branchcode | html %]" value="[% policies.$branchcode.pickup_interval %]" type="text">
+                                <span class="hint">Number of minutes each curbside pickup interaction will take.</span>
+                            </li>
+
+                            <li>
+                                <label for="max-per-interval-[% branchcode | html %]">Maximum patrons per interval: </label>
+                                <input name="max-per-interval-[% branchcode | html %]" id="max-per-interval-[% branchcode | html %]" value="[% policies.$branchcode.patrons_per_interval %]" type="text">
+                                <span class="hint">Maximum number of simulataneus pickups per interval.</span>
+                            </li>
+
+                            <li>
+                                <label for="patron-scheduled-[% branchcode | html %]">Patron-scheduled pickup: </label>
+                                [% IF policies.$branchcode.patron_scheduled_pickup %]
+                                    <input name="patron-scheduled-[% branchcode | html %]" id="patron-scheduled-[% branchcode | html %]" value="1" type="checkbox" checked>
+                                [% ELSE %]
+                                    <input name="patron-scheduled-[% branchcode | html %]" id="patron-scheduled-[% branchcode | html %]" value="1" type="checkbox">
+                                [% END %]
+                                <span class="hint">Enable patrons to schedule their own curbvside pickups for <i>[% l.branchname | html %]</i>.</span>
+                            </li>
+                        </ol>
+                    </fieldset>
+
+                    <fieldset class="rows">
+                        <legend>Curbside pickup hours for <i>[% l.branchname %]</i></legend>
+
+                        <ol>
+                            <li>
+                                <label>Sunday: </label>
+
+                                <input name="pickup-start-hour-sunday-[% branchcode | html %]" size="3" value="[% policies.$branchcode.sunday_start_hour %]" type="text">
+                                :
+                                <input name="pickup-start-minute-sunday-[% branchcode | html %]" size="3" value="[% policies.$branchcode.sunday_start_minute %]" type="text">
+
+                                to
+
+                                <input name="pickup-end-hour-sunday-[% branchcode | html %]" size="3" value="[% policies.$branchcode.sunday_end_hour %]" type="text">
+                                :
+                                <input name="pickup-end-minute-sunday-[% branchcode | html %]" size="3" value="[% policies.$branchcode.sunday_end_minute %]" type="text">
+                            </li>
+
+                            <li>
+                                <label>Monday: </label>
+
+                                <input name="pickup-start-hour-monday-[% branchcode | html %]" size="3" value="[% policies.$branchcode.monday_start_hour %]" type="text">
+                                :
+                                <input name="pickup-start-minute-monday-[% branchcode | html %]" size="3" value="[% policies.$branchcode.monday_start_minute %]" type="text">
+
+                                to
+
+                                <input name="pickup-end-hour-monday-[% branchcode | html %]" size="3" value="[% policies.$branchcode.monday_end_hour %]" type="text">
+                                :
+                                <input name="pickup-end-minute-monday-[% branchcode | html %]" size="3" value="[% policies.$branchcode.monday_end_minute %]" type="text">
+                            </li>
+
+                            <li>
+                                <label>Tuesday: </label>
+
+                                <input name="pickup-start-hour-tuesday-[% branchcode | html %]" size="3" value="[% policies.$branchcode.tuesday_start_hour %]" type="text">
+                                :
+                                <input name="pickup-start-minute-tuesday-[% branchcode | html %]" size="3" value="[% policies.$branchcode.tuesday_start_minute %]" type="text">
+
+                                to
+
+                                <input name="pickup-end-hour-tuesday-[% branchcode | html %]" size="3" value="[% policies.$branchcode.tuesday_end_hour %]" type="text">
+                                :
+                                <input name="pickup-end-minute-tuesday-[% branchcode | html %]" size="3" value="[% policies.$branchcode.tuesday_end_minute %]" type="text">
+                            </li>
+
+                            <li>
+                                <label>Wednesday: </label>
+
+                                <input name="pickup-start-hour-wednesday-[% branchcode | html %]" size="3" value="[% policies.$branchcode.wednesday_start_hour %]" type="text">
+                                :
+                                <input name="pickup-start-minute-wednesday-[% branchcode | html %]" size="3" value="[% policies.$branchcode.wednesday_start_minute %]" type="text">
+
+                                to
+
+                                <input name="pickup-end-hour-wednesday-[% branchcode | html %]" size="3" value="[% policies.$branchcode.wednesday_end_hour %]" type="text">
+                                :
+                                <input name="pickup-end-minute-wednesday-[% branchcode | html %]" size="3" value="[% policies.$branchcode.wednesday_end_minute %]" type="text">
+                            </li>
+
+                            <li>
+                                <label>Thursday: </label>
+
+                                <input name="pickup-start-hour-thursday-[% branchcode | html %]" size="3" value="[% policies.$branchcode.thursday_start_hour %]" type="text">
+                                :
+                                <input name="pickup-start-minute-thursday-[% branchcode | html %]" size="3" value="[% policies.$branchcode.thursday_start_minute %]" type="text">
+
+                                to
+
+                                <input name="pickup-end-hour-thursday-[% branchcode | html %]" size="3" value="[% policies.$branchcode.thursday_end_hour %]" type="text">
+                                :
+                                <input name="pickup-end-minute-thursday-[% branchcode | html %]" size="3" value="[% policies.$branchcode.thursday_end_minute %]" type="text">
+                            </li>
+
+                            <li>
+                                <label>Friday: </label>
+
+                                <input name="pickup-start-hour-friday-[% branchcode | html %]" size="3" value="[% policies.$branchcode.friday_start_hour %]" type="text">
+                                :
+                                <input name="pickup-start-minute-friday-[% branchcode | html %]" size="3" value="[% policies.$branchcode.friday_start_minute %]" type="text">
+
+                                to
+
+                                <input name="pickup-end-hour-friday-[% branchcode | html %]" size="3" value="[% policies.$branchcode.friday_end_hour %]" type="text">
+                                :
+                                <input name="pickup-end-minute-friday-[% branchcode | html %]" size="3" value="[% policies.$branchcode.friday_end_minute %]" type="text">
+                            </li>
+
+                            <li>
+                                <label>Saturday: </label>
+
+                                <input name="pickup-start-hour-saturday-[% branchcode | html %]" size="3" value="[% policies.$branchcode.saturday_start_hour %]" type="text">
+                                :
+                                <input name="pickup-start-minute-saturday-[% branchcode | html %]" size="3" value="[% policies.$branchcode.saturday_start_minute %]" type="text">
+
+                                to
+
+                                <input name="pickup-end-hour-saturday-[% branchcode | html %]" size="3" value="[% policies.$branchcode.saturday_end_hour %]" type="text">
+                                :
+                                <input name="pickup-end-minute-saturday-[% branchcode | html %]" size="3" value="[% policies.$branchcode.saturday_end_minute %]" type="text">
+                            </li>
+                        </ol>
+                    </fieldset>
+
+                </div>
+            [% END %]
+        </div>
+
+
+        <input type="hidden" name="save" value="1" />
+
+        <hr>
+        <fieldset>
+            <input type="submit" value="Save configuration" />
+        </fieldset>
+    </form>
+
+[% MACRO jsinclude BLOCK %]
+    <script type="text/javascript">
+         $(document).ready(function() {
+            $('#abouttabs').tabs();
+         });
+    </script>
+[% END %]
+
+[% INCLUDE 'intranet-bottom.inc' %]

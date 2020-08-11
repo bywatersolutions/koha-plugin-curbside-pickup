@@ -1,0 +1,509 @@
+[% USE date %]
+[% USE To %]
+[% USE Branches %]
+[% USE KohaDates %]
+[% SET footerjs = 1 %]
+[% INCLUDE 'doc-head-open.inc' %]
+ <title>Koha: Curbside pickup: Dashboard</title>
+[% INCLUDE 'doc-head-close.inc' %]
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.27.0/moment.min.js" integrity="sha512-rmZcZsyhe0/MAjquhTgiUcb4d9knaFc7b5xAfju483gbEXTkeJRUMIPk6s3ySZMYUHEcjKbjLjyddGWMrNEvZg==" crossorigin="anonymous"></script>
+</head>
+<body>
+[% INCLUDE 'header.inc' %]
+[% INCLUDE 'cat-search.inc' %]
+
+<div id="breadcrumbs"><a href="/cgi-bin/koha/mainpage.pl">Home</a> &rsaquo; <a href="/cgi-bin/koha/plugins/plugins-home.pl">Plugins</a> &rsaquo; Curbside pickup &rsaquo; Dashboard</div>
+
+<div id="doc3">
+    [% IF problem %]
+        <div class="dialog alert">
+            [% IF problem.type == "too_many_pickups" %]
+                This patron already has a scheduled pickup for this library.
+            [% ELSIF problem.type == "checkout" %]
+                Unable to check the following items out to [% problem.patron.firstname | html %] [% problem.patron.surname | html %] ([% problem.patron.cardnumber | html %])!
+                <ul>
+                    [% FOREACH h IN problem.holds %]
+                        <li>[% h.biblio.title | html %] ([% h.biblio.author %], [% h.item.barcode %])</li>
+                    [% END %]
+                </ul>
+            [% END %]
+        </div>
+    [% END %]
+
+    <div id="pickup-tabs" class="toptabs">
+        <ul>
+            <li><a id="to-be-staged-tab"      href="#to-be-staged">To be staged</a></li>
+            <li><a id="staged-and-ready-tab"  href="#staged-and-ready">Staged & ready</a></li>
+            <li><a id="patron-is-outside-tab" href="#patron-is-outside">Patron is outside</a></li>
+            <li><a id="delivered-today-tab"    href="#delivered-today">Delivered today</a></li>
+            <li><a id="schedule-pickup-tab"   href="#schedule-pickup">Schedule pickup</a></li>
+        </ul>
+
+        <div id="to-be-staged">
+            <form method="post" class="form">
+                <input type="hidden" name="class" value="[% CLASS %]"/>
+                <input type="hidden" name="method" value="[% METHOD %]"/>
+                <p>
+                    <button type="submit" class="btn btn-default"><i class="fa fa-refresh" aria-hidden="true"></i> Refresh</button>
+                </p>
+            </form>
+
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Pickup Date/Time</th>
+                        <th>Patron</th>
+                        <th>Items for pickup</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    [% FOREACH cp IN curbside_pickups %]
+                        [% UNLESS cp.staged_datetime %]
+                            <tr>
+                                <td>[% cp.scheduled_pickup_datetime | $KohaDates with_hours = 1 %]</td>
+                                <td>
+                                    [% cp.patron.firstname %] [% cp.patron.surname %] ([% cp.patron.cardnumber %])
+                                    [% IF cp.notes %]
+                                        <br/>
+                                        Notes: [% cp.notes %]
+                                    [% END %]
+                                </td>
+                                <td>
+                                    [% FOREACH h IN cp.patron.holds %]
+                                        [% h.biblio.title %] ([% h.biblio.author %], [% h.item.barcode %])<br/>
+                                    [% END %]
+                                </td>
+                                <td>
+                                    <form method="post" class="form">
+                                        <input type="hidden" name="class" value="[% CLASS %]"/>
+                                        <input type="hidden" name="method" value="[% METHOD %]"/>
+                                        <input type="hidden" name="action" value="mark-as-staged"/>
+                                        <input type="hidden" name="id" value="[% cp.id %]"/>
+                                        <p>
+                                            <button type="submit" class="btn btn-default"><i class="fa fa-check" aria-hidden="true"></i> Mark as <i>staged & ready</i></button>
+                                        </p>
+                                    </form>
+
+                                    <form method="post" class="form">
+                                        <input type="hidden" name="class" value="[% CLASS %]"/>
+                                        <input type="hidden" name="method" value="[% METHOD %]"/>
+                                        <input type="hidden" name="action" value="cancel"/>
+                                        <input type="hidden" name="id" value="[% cp.id %]"/>
+                                        <p>
+                                            <button type="submit" class="btn btn-default"><i class="fa fa-ban" aria-hidden="true"></i> Cancel</button>
+                                        </p>
+                                    </form>
+                                </td>
+                            </tr>
+                        [% END %]
+                    [% END %]
+                </tbody>
+            </table>
+        </div>
+
+        <div id="staged-and-ready">
+            <form method="post" class="form">
+                <input type="hidden" name="class" value="[% CLASS %]"/>
+                <input type="hidden" name="method" value="[% METHOD %]"/>
+                <input type="hidden" name="tab" value="staged-and-ready"/>
+                <p>
+                    <button type="submit" class="btn btn-default"><i class="fa fa-refresh" aria-hidden="true"></i> Refresh</button>
+                </p>
+            </form>
+
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Pickup Date/Time</th>
+                        <th>Patron</th>
+                        <th>Items for pickup</th>
+                        <th>Staged by</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    [% FOREACH cp IN curbside_pickups %]
+                        [% IF cp.staged_datetime && !cp.arrival_datetime %]
+                            <tr>
+                                <td>[% cp.scheduled_pickup_datetime | $KohaDates with_hours = 1 %]</td>
+                                <td>
+                                    [% cp.patron.firstname %] [% cp.patron.surname %] ([% cp.patron.cardnumber %])
+                                    [% IF cp.notes %]
+                                        <br/>
+                                        Notes: [% cp.notes %]
+                                    [% END %]
+                                </td>
+                                <td>
+                                    [% FOREACH h IN cp.patron.holds %]
+                                        [% h.biblio.title %] ([% h.biblio.author %], [% h.item.barcode %])<br/>
+                                    [% END %]
+                                </td>
+                                <td>
+                                    [% cp.staged_by_staff.firstname %] [% cp.staged_by_staff.surname %]
+                                </td>
+                                <td>
+                                    <form method="post" class="form">
+                                        <input type="hidden" name="class" value="[% CLASS %]"/>
+                                        <input type="hidden" name="method" value="[% METHOD %]"/>
+                                        <input type="hidden" name="action" value="mark-patron-has-arrived"/>
+                                        <input type="hidden" name="id" value="[% cp.id %]"/>
+                                        <p>
+                                            <button type="submit" class="btn btn-default"><i class="fa fa-map-marker" aria-hidden="true"></i> Patron has arrived</button>
+                                        </p>
+                                    </form>
+
+                                    <form method="post" class="form">
+                                        <input type="hidden" name="class" value="[% CLASS %]"/>
+                                        <input type="hidden" name="method" value="[% METHOD %]"/>
+                                        <input type="hidden" name="action" value="mark-as-delivered"/>
+                                        <input type="hidden" name="id" value="[% cp.id %]"/>
+                                        <p>
+                                            <button type="submit" class="btn btn-default"><i class="fa fa-envelope" aria-hidden="true"></i> Mark as <i>delivered</i></button>
+                                        </p>
+                                    </form>
+
+                                    <form method="post" class="form">
+                                        <input type="hidden" name="class" value="[% CLASS %]"/>
+                                        <input type="hidden" name="method" value="[% METHOD %]"/>
+                                        <input type="hidden" name="action" value="mark-as-unstaged"/>
+                                        <input type="hidden" name="id" value="[% cp.id %]"/>
+                                        <p>
+                                            <button type="submit" class="btn btn-default"><i class="fa fa-undo" aria-hidden="true"></i> Mark as <i>to be staged</i></button>
+                                        </p>
+                                    </form>
+                                </td>
+                            </tr>
+                        [% END %]
+                    [% END %]
+                </tbody>
+            </table>
+        </div>
+
+        <div id="patron-is-outside">
+            <form method="post" class="form">
+                <input type="hidden" name="class" value="[% CLASS %]"/>
+                <input type="hidden" name="method" value="[% METHOD %]"/>
+                <input type="hidden" name="tab" value="patron-is-outside"/>
+                <p>
+                    <button type="submit" class="btn btn-default"><i class="fa fa-refresh" aria-hidden="true"></i> Refresh</button>
+                </p>
+            </form>
+
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Pickup Date/Time</th>
+                        <th>Patron</th>
+                        <th>Items for pickup</th>
+                        <th>Staged by</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    [% FOREACH cp IN curbside_pickups %]
+                        [% IF cp.arrival_datetime && !cp.delivered_datetime %]
+                            <tr>
+                                <td>[% cp.scheduled_pickup_datetime | $KohaDates with_hours = 1 %]</td>
+                                <td>
+                                    [% cp.patron.firstname %] [% cp.patron.surname %] ([% cp.patron.cardnumber %])
+                                    [% IF cp.notes %]
+                                        <br/>
+                                        Notes: [% cp.notes %]
+                                    [% END %]
+                                </td>
+                                <td>
+                                    [% FOREACH h IN cp.patron.holds %]
+                                        [% h.biblio.title %] ([% h.biblio.author %], [% h.item.barcode %])<br/>
+                                    [% END %]
+                                </td>
+                                <td>
+                                    [% cp.staged_by_staff.firstname %] [% cp.staged_by_staff.surname %]
+                                </td>
+                                <td>
+                                    <form method="post" class="form">
+                                        <input type="hidden" name="class" value="[% CLASS %]"/>
+                                        <input type="hidden" name="method" value="[% METHOD %]"/>
+                                        <input type="hidden" name="action" value="mark-as-delivered"/>
+                                        <input type="hidden" name="id" value="[% cp.id %]"/>
+                                        <p>
+                                            <button type="submit" class="btn btn-default"><i class="fa fa-envelope" aria-hidden="true"></i> Mark as delivered</button>
+                                        </p>
+                                    </form>
+
+                                    <form method="post" class="form">
+                                        <input type="hidden" name="class" value="[% CLASS %]"/>
+                                        <input type="hidden" name="method" value="[% METHOD %]"/>
+                                        <input type="hidden" name="action" value="mark-as-staged"/>
+                                        <input type="hidden" name="id" value="[% cp.id %]"/>
+                                        <p>
+                                            <button type="submit" class="btn btn-default"><i class="fa fa-undo" aria-hidden="true"></i> Mark as <i>staged & ready</i></button>
+                                        </p>
+                                    </form>
+
+                                    <form method="post" class="form">
+                                        <input type="hidden" name="class" value="[% CLASS %]"/>
+                                        <input type="hidden" name="method" value="[% METHOD %]"/>
+                                        <input type="hidden" name="action" value="mark-as-unstaged"/>
+                                        <input type="hidden" name="id" value="[% cp.id %]"/>
+                                        <p>
+                                            <button type="submit" class="btn btn-default"><i class="fa fa-undo" aria-hidden="true"></i> Mark as <i>to be staged</i></button>
+                                        </p>
+                                    </form>
+                                </td>
+                            </tr>
+                        [% END %]
+                    [% END %]
+                </tbody>
+            </table>
+        </div>
+
+        <div id="delivered-today">
+            <form method="post" class="form">
+                <input type="hidden" name="class" value="[% CLASS %]"/>
+                <input type="hidden" name="method" value="[% METHOD %]"/>
+                <input type="hidden" name="tab" value="delivered-today"/>
+                <p>
+                    <button type="submit" class="btn btn-default"><i class="fa fa-refresh" aria-hidden="true"></i> Refresh</button>
+                </p>
+            </form>
+
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Deliver Date/Time</th>
+                        <th>Patron</th>
+                        <th>Items checked out</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    [% FOREACH cp IN curbside_pickups %]
+                        [% IF cp.delivered_datetime %]
+                            <tr>
+                                <td>[% cp.delivered_datetime | $KohaDates with_hours = 1 %]</td>
+                                <td>
+                                    [% cp.patron.firstname %] [% cp.patron.surname %] ([% cp.patron.cardnumber %])
+                                    [% IF cp.notes %]
+                                        <br/>
+                                        Notes: [% cp.notes %]
+                                    [% END %]
+                                </td>
+                                <td>
+                                    [% FOREACH c IN cp.patron.checkouts %]
+                                        [% IF date.format(c.issuedate, format = '%Y-%m-%d') == date.format(date.now, format = '%Y-%m-%d') %]
+                                            [% c.item.biblio.title %] ([% c.item.biblio.author %], [% c.item.barcode %])<br/>
+                                        [% END %]
+                                    [% END %]
+                                </td>
+                            </tr>
+                        [% END %]
+                    [% END %]
+                </tbody>
+            </table>
+        </div>
+
+        <div id="schedule-pickup">
+			[% IF !patron || ( patron && existing_curbside_pickups.count >= 1 ) %]
+                [% IF existing_curbside_pickups.count >= 1 %]
+                    <div class="dialog alert">
+                        [% patron.firstname | html %] [% patron.surname | html %] ([% patron.cardnumber | html %]) already has a scheduled pickup for this library.
+                    </div>
+                [% END %]
+				<form method="post" class="form-inline">
+					<input type="hidden" name="class" value="[% CLASS %]"/>
+					<input type="hidden" name="method" value="[% METHOD %]"/>
+                    <input type="hidden" name="action" value="find-patron"/>
+                    <input type="hidden" name="tab" value="schedule-pickup"/>
+
+					<div class="form-group">
+						<label class="sr-only" for="input-patron-cardnumber">Cardnumber</label>
+						<div class="input-group">
+							<div class="input-group-addon">Card number</div>
+							<input type="text" class="form-control" name="cardnumber" id="input-patron-cardnumber" placeholder="Enter patron cardnumber"/>
+						</div>
+					</div>
+
+					<button type="submit" class="btn btn-default">Submit</button>
+				</form>
+			[% ELSE %]
+				<form method="post" class="form-horizontal">
+                  <input type="hidden" name="class" value="[% CLASS %]"/>
+                  <input type="hidden" name="method" value="[% METHOD %]"/>
+                  <input type="hidden" name="borrowernumber" value="[% patron.id | html %]"/>
+                  <input type="hidden" name="action" value="create-pickup"/>
+                  <input type="hidden" name="tab" value="schedule-pickup"/>
+
+				  <div class="form-group">
+					<label class="col-sm-2 control-label">Patron:</label>
+					<div class="col-sm-10">
+					  <p class="form-control-static">[% patron.firstname %] [% patron.surname %]</p>
+					</div>
+				  </div>
+
+				  <div class="form-group">
+					<label class="col-sm-2 control-label">Items ready for pickup:</label>
+					<div class="col-sm-10">
+						[% FOREACH h IN patron.holds %]
+							[% IF h.found == 'W' && h.branchcode == Branches.GetLoggedInBranchcode %]
+					  			<p class="form-control-static">[% h.biblio.title %] ( [% h.item.barcode %] )</p>
+							[% END %]
+						[% END %]
+					</div>
+				  </div>
+
+				  <div class="form-group">
+					<label for="inputEmail3" class="col-sm-2 control-label">Pickup date:</label>
+					<div class="col-xs-2">
+                      <input name="pickup_date" type="text" class="form-control" id="datepicker"/>
+					</div>
+					<div class="col-xs-2">
+                      <select name="pickup_time" class="form-control" id="pickup-time"></select>
+					</div>
+				  </div>
+
+				  <div class="form-group">
+					<label class="col-sm-2 control-label">Notes:</label>
+					<div class="col-sm-10">
+                      <input class="form-control" name="notes" type="text"/>
+					</div>
+				  </div>
+
+				  <div class="form-group">
+					<label class="col-sm-2"></label>
+                    <div class="col-sm-10">
+                      <button type="submit" class="btn btn-default">Submit</button>
+                    </div>
+                  </div>
+				</form>
+			[% END %]
+        </div>
+</div>
+
+
+[% MACRO jsinclude BLOCK %]
+<script>
+[% IF pickups_json %]
+	let pickups = [% pickups_json %];
+[% ELSE %]
+	let pickups = {};
+[% END %]
+
+[% IF policy_json %]
+	let policy = [% policy_json %];
+[% ELSE %]
+	let policy = {};
+[% END %]
+
+let existingPickupMoments = [];
+for (let i = 0; i < pickups.length; i++) {
+    let pickup = pickups[i];
+    let scheduled_pickup_datetime = pickup.scheduled_pickup_datetime;
+    let pickupMoment = moment(scheduled_pickup_datetime);
+
+    existingPickupMoments.push(pickupMoment);
+}
+
+$(document).ready(function() {
+    $('#pickup-tabs').tabs();
+    $('#pickup-time').hide();
+
+    $('#schedule-pickup-tab').on('click', function() {
+        $('#input-patron-cardnumber').focus();
+    });
+
+    [% IF tab %]
+	    $('#[% tab %]-tab').click();
+    [% END %]
+
+    $("#datepicker").datepicker();
+    $("#datepicker").on('change', function() {
+        var currentDate = $("#datepicker").datepicker("getDate");
+
+        let selectedDate = moment(currentDate);
+
+        let dow = selectedDate.format('dddd').toLowerCase();
+        let start_hour = policy[dow + "_start_hour"];
+        let start_minute = policy[dow + "_start_minute"];
+        let end_hour = policy[dow + "_end_hour"];
+        let end_minute = policy[dow + "_end_minute"];
+
+        let pickup_interval = policy.pickup_interval;
+
+        let listStartMoment = selectedDate.clone();
+        listStartMoment.hour(start_hour);
+        listStartMoment.minute(start_minute);
+        let listEndMoment = selectedDate.clone();
+        listEndMoment.hour(end_hour);
+        listEndMoment.minute(end_minute);
+
+        let pickup_times = [];
+        let workingTimeMoment = listStartMoment.clone();
+        let keep_going = true;
+        let now = moment();
+
+        // Initialize pickup slots starting at opening time
+        let pickupIntervalStartMoment = workingTimeMoment.clone();
+        let pickupIntervalEndMoment = pickupIntervalStartMoment.clone()
+        pickupIntervalEndMoment.add(pickup_interval, 'minutes');
+        let pickupSlots = [];
+        while (keep_going) {
+            let available = true;
+
+			if (pickupIntervalStartMoment.isBefore(now)) {
+				// Slots in the past are unavailable
+				available = false;
+			}
+
+			if (pickupIntervalEndMoment.isAfter(listEndMoment)) {
+				// Slots after the end of pickup times for the day are unavailable
+				available = false;
+			}
+
+			let pickups_scheduled = 0;
+            for (let i = 0; i < existingPickupMoments.length; i++) {
+                let pickupMoment = existingPickupMoments[i];
+
+                // An existing pickup time
+                if (pickupMoment.isSameOrAfter(pickupIntervalStartMoment) && pickupMoment.isBefore(pickupIntervalEndMoment)) {
+                    // This calculated pickup is in use by another scheduled pickup
+                    pickups_scheduled++;
+                }
+            }
+
+			if (pickups_scheduled >= policy.patrons_per_interval) {
+				available = false;
+			}
+
+            pickupSlots.push(
+				{
+					"available": available,
+					"moment": pickupIntervalStartMoment.clone(),
+					"pickups_scheduled": pickups_scheduled
+				}
+			);
+
+            pickupIntervalStartMoment = pickupIntervalEndMoment.clone();
+            pickupIntervalEndMoment.add(pickup_interval, 'minutes');
+            if (pickupIntervalEndMoment.isAfter(listEndMoment)) {
+                // This latest slot is after the end of pickup times for the day, so we can stop
+                keep_going = false;
+            }
+        }
+
+        $('#pickup-time').empty();
+        for (let i = 0; i < pickupSlots.length; i++) {
+            let pickupSlot = pickupSlots[i];
+            let optText = pickupSlot.moment.format("LT");
+            let optValue = pickupSlot.moment.format("YYYY-MM-DD HH:mm:ss");
+            let pickups_scheduled = pickupSlot.pickups_scheduled;
+            let disabled = pickupSlot.available ? "" : "disabled";
+            $("#pickup-time").append(`<option value="${optValue}" ${disabled}>${optText} (${pickups_scheduled})</option>`);
+        }
+
+        $('#pickup-time').show();
+    });
+});
+</script>
+[% END %]
+
+[% INCLUDE 'intranet-bottom.inc' %]

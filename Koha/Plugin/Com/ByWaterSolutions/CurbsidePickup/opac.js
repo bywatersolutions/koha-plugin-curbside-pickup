@@ -1,0 +1,395 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.27.0/moment.min.js" integrity="sha512-rmZcZsyhe0/MAjquhTgiUcb4d9knaFc7b5xAfju483gbEXTkeJRUMIPk6s3ySZMYUHEcjKbjLjyddGWMrNEvZg==" crossorigin="anonymous"></script>
+        // Populate the "Pickup library" pulldown with branches that have curbside pickups enabled
+        for (let i = 0; i < policies.length; i++) {
+            let policy = policies[i];
+            if (policy.enabled && ) {
+                $("#pickup-branch").append(`<option value="${policy.branchcode}">${policy.branchname}</option>`);
+            }
+        }
+<script>
+$(document).ready(function() {
+    $("#menu ul li:first").after($("<li><a id='my-pickups' href='#'>your curbside pickups</li>"));
+
+    let pickups;
+    let my_pickups;
+    let policies;
+    let existingPickupMomentsByLibrary = {};
+    let policiesByLibrary = {};
+    let borrowernumber = $(".loggedinusername").data('borrowernumber');
+    let enable_patron_scheduled_pickup = false;
+
+    function get_my_pickups(borrowernumber) {
+        $.ajax({
+            type: 'GET',
+            url: `/api/v1/contrib/curbsidepickup/patrons/${borrowernumber}/pickups`,
+            dataType: 'json',
+            async: false,
+            success: function(data) {
+                my_pickups = data;
+            }
+        });
+    }
+
+    function get_policies() {
+        $.ajax({
+            type: 'GET',
+            url: `/api/v1/contrib/curbsidepickup/libraries/policies`,
+            dataType: 'json',
+            async: false,
+            success: function(data) {
+                policies = data;
+            }
+        });
+    }
+
+    function get_pickups() {
+        $.ajax({
+            type: 'GET',
+            url: `/api/v1/contrib/curbsidepickup/patrons/pickups`,
+            dataType: 'json',
+            async: false,
+            success: function(data) {
+                pickups = data;
+            }
+        });
+    }
+
+    function update_data() {
+        get_my_pickups(borrowernumber);
+        get_policies();
+        get_pickups();
+
+        existingPickupMomentsByLibrary = {};
+        policiesByLibrary = {};
+
+        // Initialize all the keys for existingPickupMomentsByLibrary as arrays
+        for (let i = 0; i < policies.length; i++) {
+            let policy = policies[i];
+
+            policiesByLibrary[policy.branchcode] = policy;
+            existingPickupMomentsByLibrary[policy.branchcode] = [];
+
+            $("#pickup-branch").find('option').remove();
+
+            if (policy.enabled && policy.patron_scheduled_pickup) {
+                enable_patron_scheduled_pickup = true;
+                $("#pickup-branch").append(`<option value="${policy.branchcode}">${policy.branchname}</option>`);
+            }
+        }
+
+        // Convert all the existing pickups into Moments for future use
+        for (let i = 0; i < pickups.length; i++) {
+            let pickup = pickups[i];
+            let scheduled_pickup_datetime = pickup.scheduled_pickup_datetime;
+            let pickupMoment = moment(scheduled_pickup_datetime);
+            existingPickupMomentsByLibrary[pickup.branchcode].push(pickupMoment);
+        }
+    }
+
+    $('body').on('change', '#datepicker', function() {
+        $('#schedule-pickup-button').prop('disabled', false);
+
+        // Grab the policy and list of existing curbside pickups based on the selected library
+        let branchcode = $('#pickup-branch').val();
+        let existingPickupMoments = existingPickupMomentsByLibrary[branchcode];
+        let policy = policiesByLibrary[branchcode];
+
+        var currentDate = $("#datepicker").datepicker("getDate");
+
+        let selectedDate = moment(currentDate);
+
+        let dow = selectedDate.format('dddd').toLowerCase();
+        let start_hour = policy[dow + "_start_hour"];
+        let start_minute = policy[dow + "_start_minute"];
+        let end_hour = policy[dow + "_end_hour"];
+        let end_minute = policy[dow + "_end_minute"];
+
+        let pickup_interval = policy.pickup_interval;
+
+        let listStartMoment = selectedDate.clone();
+        listStartMoment.hour(start_hour);
+        listStartMoment.minute(start_minute);
+        let listEndMoment = selectedDate.clone();
+        listEndMoment.hour(end_hour);
+        listEndMoment.minute(end_minute);
+
+        let pickup_times = [];
+        let workingTimeMoment = listStartMoment.clone();
+        let keep_going = true;
+        let now = moment();
+
+        // Initialize pickup slots starting at opening time
+        let pickupIntervalStartMoment = workingTimeMoment.clone();
+        let pickupIntervalEndMoment = pickupIntervalStartMoment.clone()
+        pickupIntervalEndMoment.add(pickup_interval, 'minutes');
+        let pickupSlots = [];
+        while (keep_going) {
+
+            let available = true;
+
+            if (pickupIntervalStartMoment.isBefore(now)) {
+                // Slots in the past are unavailable
+                available = false;
+            }
+
+            if (pickupIntervalEndMoment.isAfter(listEndMoment)) {
+                // Slots after the end of pickup times for the day are unavailable
+                available = false;
+            }
+
+            let pickups_scheduled = 0;
+            for (let i = 0; i < existingPickupMoments.length; i++) {
+                let pickupMoment = existingPickupMoments[i];
+
+                // An existing pickup time
+                if (pickupMoment.isSameOrAfter(pickupIntervalStartMoment) && pickupMoment.isBefore(pickupIntervalEndMoment)) {
+                    // This calculated pickup is in use by another scheduled pickup
+                    pickups_scheduled++;
+                }
+            }
+
+            if (pickups_scheduled >= policy.patrons_per_interval) {
+                available = false;
+            }
+
+            pickupSlots.push({
+                "available": available,
+                "moment": pickupIntervalStartMoment.clone(),
+                "pickups_scheduled": pickups_scheduled
+            });
+
+            pickupIntervalStartMoment = pickupIntervalEndMoment.clone();
+            pickupIntervalEndMoment.add(pickup_interval, 'minutes');
+            if (pickupIntervalEndMoment.isAfter(listEndMoment)) {
+                // This latest slot is after the end of pickup times for the day, so we can stop
+                keep_going = false;
+            }
+        }
+
+        $('#pickup-time').empty();
+        for (let i = 0; i < pickupSlots.length; i++) {
+            let pickupSlot = pickupSlots[i];
+            let optText = pickupSlot.moment.format("LT");
+            let optValue = pickupSlot.moment.format("YYYY-MM-DD HH:mm:ss");
+            let pickups_scheduled = pickupSlot.pickups_scheduled;
+            let disabled = pickupSlot.available ? "" : "disabled";
+            $("#pickup-time").append(`<option value="${optValue}" ${disabled}>${optText} (${pickups_scheduled})</option>`);
+        }
+
+        $('#pickup-time').show();
+    });
+
+    // Adds the curbside pickups tab and the "your pickups" and "schedule a pickup" tab.
+    $("#my-pickups").on("click", function() {
+        update_data();
+
+        $(".maincontent").replaceWith(function() {
+            let tabs_and_table = `
+                <div id='pickupdetails' class='maincontent'>
+                    <h2>Curbside pickups</h2>
+                    <div id="opac-user-views" class="toptabs">
+                        <ul>
+                            <li><a href="#opac-user-pickups">your pickups</a></li>
+                            ${ enable_patron_scheduled_pickup ? `<li><a href="#opac-user-schedule-pickup">schedule a pickup</a></li>` : "" }
+                        </ul>
+
+                        <div id="opac-user-pickups">
+                            <table id="pickups-table" class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Pickup library</td>
+                                        <th>Date</th>
+                                        <th>Time</th>
+                                        <th>Notes</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+            `;
+
+            let pickup_form = `
+                        <div id="opac-user-schedule-pickup">
+                            <fieldset class="rows">
+                                <ol>
+                                    <li>
+                                        <label for="pickup_branch">Pickup library:</label>
+                                        <select name="pickup_branch" id="pickup-branch">
+                                            <option value="SELECT_A_LIBRARY">Select a library</option>
+                                        </select>
+                                        <span id="existing-pickup-warning" class="required">You already have a pickup scheduled for this library.</span>
+                                    </li>
+                                    <li>
+                                        <label for="pickup_date">Pickup date:</label>
+                                        <input name="pickup_date" type="text" class="form-control" id="datepicker" disabled/>
+                                        <select name="pickup_time" id="pickup-time"></select>
+                                    </li>
+
+                                    <li>
+                                        <label for="notes">Notes:</label>
+                                        <input name="notes" id="notes" />
+                                    </li>
+                                </ol>
+                            </fieldset>
+
+                            <div class="form-group">
+                                <label class="col-sm-2"></label>
+                                <div class="col-sm-10">
+                                    <button id="schedule-pickup-button" class="btn btn-default" disabled>Schedule pickup</button>
+                                </div>
+                            </div>
+                        </div>
+            `;
+
+            let closing_div = `</div>`;
+
+            if ( enable_patron_scheduled_pickup ) {
+                return tabs_and_table + pickup_form + closing_div;
+            } else {
+                return tabs_and_table + closing_div;
+            }
+        });
+
+        $('#existing-pickup-warning').hide();
+
+        $('#pickup-branch').on('change', function() {
+            let branchcode = $(this).val();
+
+            let existing_pickup = false;
+            for (let i = 0; i < my_pickups.length; i++) {
+                let p = my_pickups[i];
+                if (p.branchcode == branchcode) {
+                    existing_pickup = true;
+                }
+            }
+
+            $('#datepicker').val("");
+            $('#pickup-time').val("");
+            $('#pickup-time').hide();
+            $('#schedule-pickup-button').prop('disabled', true);
+
+            if (existing_pickup) {
+                $('#existing-pickup-warning').show();
+                $('#datepicker').prop('disabled', true);
+            } else {
+                $('#existing-pickup-warning').hide();
+
+                if (branchcode != "SELECT_A_LIBRARY") {
+                    $('#datepicker').prop('disabled', false);
+                } else {
+                    $('#datepicker').prop('disabled', true);
+                }
+            }
+        });
+
+        $('#schedule-pickup-button').on('click', function() {
+            $('#schedule-pickup-button').prop('disabled', true);
+
+            let patron_id = borrowernumber;
+            let library_id = $('#pickup-branch').val();
+            let pickup_datetime = $('#pickup-time').val();
+            let notes = $('#notes').val();
+
+            $('#pickup-branch').val("");
+            $('#pickup-time').val("");
+            $('#pickup-time').hide();
+            $('#notes').val("");
+
+            let data = {
+                'library_id': library_id,
+                'pickup_datetime': pickup_datetime,
+                'notes': notes
+            };
+
+            $.ajax({
+                type: "POST",
+                url: `/api/v1/contrib/curbsidepickup/patrons/${patron_id}/pickup`,
+                data: JSON.stringify(data),
+                dataType: 'json',
+                success: function(data) {
+                    $('#my-pickups').click();
+                }
+            });
+        });
+
+        // Populate the "Pickup library" pulldown with branches that have curbside pickups enabled
+        for (let i = 0; i < policies.length; i++) {
+            let policy = policies[i];
+            if (policy.enabled && policy.patron_scheduled_pickup ) {
+                $("#pickup-branch").append(`<option value="${policy.branchcode}">${policy.branchname}</option>`);
+            }
+        }
+
+        $('.toptabs').tabs();
+
+        $("#datepicker").datepicker();
+
+        $("#pickup-time").hide();
+
+        $("li.active").removeClass("active");
+        $("#my-pickups").parent().addClass("active");
+
+        $.getJSON(`/api/v1/contrib/curbsidepickup/patrons/${borrowernumber}/pickups`, function(data) {
+            my_pickups = data;
+
+            for (let i = 0; i < data.length; i++) {
+                let pickup = data[i];
+                let arrived_disabled = !pickup.staged_datetime || pickup.arrival_datetime ? "disabled" : "";
+
+                let row = `
+                        <tr>
+                            <td>${pickup.branchname}</td>
+                            <td>${moment(pickup.scheduled_pickup_datetime).format("L")}</td>
+                            <td>${moment(pickup.scheduled_pickup_datetime).format("LT")}</td>
+                            <td>${pickup.notes}</td>
+                            <td>
+                                <button class="btn arrival-alert ${arrived_disabled}" href="#" data-patron-id="${pickup.borrowernumber}" data-pickup-id="${pickup.id}" ${arrived_disabled}>Alert staff of your arrival</button>
+                                <p/>
+                                <button class="btn cancel-pickup" href="#" data-patron-id="${pickup.borrowernumber}" data-pickup-id="${pickup.id}">Cancel this pickup</button>
+                                </td>
+                        </tr>
+                    `;
+
+                $("#pickups-table tbody").append(row);
+            }
+        });
+
+        $('body').on('click', '.arrival-alert', function() {
+            let button = $(this);
+            let patron_id = $(this).data('patron-id');
+            let pickup_id = $(this).data('pickup-id');
+
+            $.getJSON(`/api/v1/contrib/curbsidepickup/patrons/${patron_id}/mark_arrived/${pickup_id}`, function(data) {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    button.prop('disabled', true);
+                    button.addClass('disabled');
+                    alert("The library has been notified of your arrival");
+                }
+            })
+        });
+
+        $('body').on('click', '.cancel-pickup', function() {
+            let button = $(this);
+            let patron_id = $(this).data('patron-id');
+            let pickup_id = $(this).data('pickup-id');
+
+            let confirmed = confirm("Are you sure you want to cancel this scheduled curbside pickup?");
+            if (confirmed) {
+                $.ajax({
+                    type: "DELETE",
+                    url: `/api/v1/contrib/curbsidepickup/patrons/${patron_id}/pickup/${pickup_id}`,
+                    dataType: 'json',
+                    success: function(data) {
+                        $('#my-pickups').click();
+                        return false;
+                    }
+                });
+                return false;
+            }
+        });
+    });
+});
+</script>
