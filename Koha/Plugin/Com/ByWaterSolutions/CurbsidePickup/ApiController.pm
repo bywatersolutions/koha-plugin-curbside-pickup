@@ -19,8 +19,6 @@ use Modern::Perl;
 
 use Mojo::Base 'Mojolicious::Controller';
 
-use Koha::CurbsidePickups;
-
 use Koha::Libraries;
 use Koha::DateUtils;
 

@@ -9,11 +9,6 @@ use base qw(Koha::Plugins::Base);
 use File::Slurp qw(read_file);
 use Cwd qw(abs_path);
 
-use Koha::CurbsidePickups;
-use Koha::CurbsidePickupPolicies;
-use Koha::Schema::Result::CurbsidePickupPolicy;
-use Koha::Schema::Result::CurbsidePickup;
-
 use C4::Auth;
 use C4::Context;
 use C4::Circulation;
@@ -46,6 +41,11 @@ sub new {
 }
 
 sub tool {
+    require Koha::CurbsidePickups;
+    require Koha::CurbsidePickupPolicies;
+    require Koha::Schema::Result::CurbsidePickupPolicy;
+    require Koha::Schema::Result::CurbsidePickup;
+
     my ( $self, $args ) = @_;
 
     my $cgi      = $self->{'cgi'};
@@ -224,6 +224,11 @@ sub intranet_js {
 }
 
 sub configure {
+    require Koha::CurbsidePickups;
+    require Koha::CurbsidePickupPolicies;
+    require Koha::Schema::Result::CurbsidePickupPolicy;
+    require Koha::Schema::Result::CurbsidePickup;
+
     my ( $self, $args ) = @_;
     my $cgi = $self->{'cgi'};
 
@@ -287,7 +292,6 @@ sub configure {
 sub install() {
     my ( $self, $args ) = @_;
 
-    warn "INSTALLING";
     my $dbh = C4::Context->dbh;
 
     $dbh->do(
@@ -354,7 +358,6 @@ CREATE TABLE `curbside_pickups` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 	}
     );
-    warn "FINISHED INSTALL!";
 
     return 1;
 }
