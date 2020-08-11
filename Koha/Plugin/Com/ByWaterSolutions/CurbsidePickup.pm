@@ -287,6 +287,7 @@ sub configure {
 sub install() {
     my ( $self, $args ) = @_;
 
+    warn "INSTALLING";
     my $dbh = C4::Context->dbh;
 
     $dbh->do(
@@ -353,6 +354,9 @@ CREATE TABLE `curbside_pickups` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 	}
     );
+    warn "FINISHED INSTALL!";
+
+    return 1;
 }
 
 sub upgrade {
