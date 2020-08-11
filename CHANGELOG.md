@@ -4,23 +4,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.1.37] - 2020-04-15
+## [1.0.3] - 2020-08-11
+## Added
+- This changelog!
+
+## [1.0.2] - 2020-08-11
 ### Changed
-- A bug in github-action-koha-plugin-create-kpz meant the README.md and CHANGELOG.md files were not added to the kpz file. This should now be fixed.
-
-## [2.1.36] - 2020-04-15
-### Added
-- Added CHANGELOG.md and README.md to release artifacts.
-
-### Changed
-- A bug in github-action-koha-plugin-create-kpz meant the README.md and CHANGELOG.md files were not added to the kpz file. This should now be fixed.
-
-## [2.1.35] - 2020-04-15
-### Added
-- Added this changelog.
-
-### Changed
-- No changes in this release.
-
+- Switched from `use` to `require` to allow installation to proceed without errors. Still requires plack to be restarted before using the plugin.
 ### Removed
-- No removals in this release.
+- Installation debugging code
+
+## [1.0.1] - 2020-08-11
+### Added
+- Debugging for installation subroutine.
+
+## [1.0.0] - 2020-08-11
+### Added
+- Initial release!
+
