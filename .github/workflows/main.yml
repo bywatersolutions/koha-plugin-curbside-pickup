@@ -1,0 +1,194 @@
+name: CI
+on: [push]
+jobs:
+  unit_tests:
+    name: Run unit tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        koha-version: [master, stable, oldstable]
+    steps:
+    - uses: actions/checkout@v1
+
+    - name: Get Koha Version Branch Name
+      id: koha-version
+      uses: "bywatersolutions/github-action-koha-get-version-by-label@master"
+      with:
+        version-label: "${{ matrix.koha-version }}"
+
+    - name: Check out Koha
+      run: |
+        cd ..
+        git clone --branch ${{ steps.koha-version.outputs.current-branch-name }} --single-branch --depth 1 git://git.koha-community.org/koha.git kohaclone
+      
+    - name: Export additional variables needed by koha-testing-docker
+      run: |
+        cd ..
+        pwd
+        ls -alh
+        IFS='/' read -r -a parts <<< "$GITHUB_REPOSITORY"
+        export GITHUB_REPO="${parts[1]}"
+        export ROOT_DIR="$(pwd)"
+        export LOCAL_USER_ID="$(id -u)" # Needed for koha-testing-docker
+        export SYNC_REPO="$ROOT_DIR/kohaclone"
+        export KOHA_INTRANET_URL="http://127.0.0.1:8081"
+        export KOHA_MARC_FLAVOUR="marc21"
+        echo ::set-env name=GITHUB_REPO::$GITHUB_REPO
+        echo ::set-env name=ROOT_DIR::$ROOT_DIR
+        echo ::set-env name=LOCAL_USER_ID::$LOCAL_USER_ID
+        echo ::set-env name=SYNC_REPO::$SYNC_REPO
+        echo ::set-env name=KOHA_INTRANET_URL::$KOHA_INTRANET_URL
+        echo ::set-env name=KOHA_MARC_FLAVOUR::$KOHA_MARC_FLAVOUR
+        echo ::set-env name=RUN_TESTS_AND_EXIT::no
+        echo ::set-env name=KOHA_IMAGE::master
+        echo "GITHUB REPO: $GITHUB_REPO"
+        echo "ROOT DIR: $ROOT_DIR"
+        echo "SYNC_REPO: $SYNC_REPO"
+        ls -alh $SYNC_REPO
+
+    - name: Set up koha-testing-docker
+      run: |
+        sudo sysctl -w vm.max_map_count=262144
+        wget -O docker-compose.yml https://gitlab.com/koha-community/koha-testing-docker/raw/master/docker-compose.yml
+        mkdir -p env
+        wget -O env/defaults.env https://gitlab.com/koha-community/koha-testing-docker/raw/master/env/defaults.env
+        cp env/defaults.env .env
+        docker-compose pull
+#    - name: Setup Debug Session
+#      uses: csexton/debugger-action@master
+
+    - name: Run tests
+      run: |
+        pwd
+        ls -alh
+        docker-compose -f docker-compose.yml -p koha up --detach
+        cd ..
+        pwd
+        ls -alh
+        echo "SLEEPING 3 MINUTES"
+        sleep 60
+        echo "1 MINUTE DONE"
+        sleep 60
+        echo "2 MINUTES DONE"
+        sleep 60
+        echo "3 MINUTES DONE"
+        echo "WAKING UP"
+        docker cp $GITHUB_REPO/. koha_koha_1:/var/lib/koha/kohadev/plugins
+        docker exec koha_koha_1 bash -c 'prove /var/lib/koha/kohadev/plugins/t'
+        
+    - name: Post test cleanup
+      run: |
+        docker-compose down
+        docker rm -f $(docker ps -a -f "name=koha_" -q)
+        docker volume prune -f
+        docker image  prune -f
+        rm docker-compose.yml
+        rm -rf env .env
+
+  release:
+    name: Build & Release
+    runs-on: ubuntu-latest
+    #needs: unit_tests
+    strategy:
+      fail-fast: false
+    steps:
+    - uses: actions/checkout@v1
+
+    - name: Parse out and store the GitHub repository name
+      id: myvars
+      run: |
+        IFS='/' read -r -a parts <<< "$GITHUB_REPOSITORY"
+        GITHUB_REPO="${parts[1]}"
+        echo ::set-output name=github_repo::$GITHUB_REPO
+        echo "GITHUB REPO: $GITHUB_REPO"
+
+    - name: Get Previous tag
+      id: previoustag
+      uses: "WyriHaximus/github-action-get-previous-tag@master"
+      env:
+        GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+
+    - name: Get next minor version
+      id: semvers
+      uses: "WyriHaximus/github-action-next-semvers@master"
+      with:
+        version: ${{ steps.previoustag.outputs.tag }}
+
+    - name: Get Koha Version Branch Name
+      id: koha-version-oldstable
+      uses: "bywatersolutions/github-action-koha-get-version-by-label@master"
+      with:
+        version-label: "oldstable"
+
+    - name: Print minimum version
+      run: |
+        echo "Current oldstable version: ${{ steps.koha-version-oldstable.outputs.version-major-minor }}"
+
+    - name: Build Koha Plugin kpz artifact
+      id: kpz
+      uses: "bywatersolutions/github-action-koha-plugin-create-kpz@master"
+      with:
+        release-version: ${{ steps.semvers.outputs.v_patch }}
+        release-name: ${{ steps.myvars.outputs.GITHUB_REPO }}
+        minimum-version: ${{ steps.koha-version-oldstable.outputs.version-major-minor }}
+
+    - name: See if kpz was created
+      run: |
+        echo "FILENAME: ${{ steps.kpz.outputs.filename }}"
+        ls -alh
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+      with:
+        tag_name: ${{ steps.semvers.outputs.v_patch }}
+        release_name: Release ${{ steps.semvers.outputs.v_patch }}
+        draft: false
+        prerelease: false
+
+    - name: Upload Release Asset kpz
+      id: upload-release-asset-kpz
+      uses: actions/upload-release-asset@v1.0.1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./${{ steps.kpz.outputs.filename }}
+        asset_name: ${{ steps.kpz.outputs.filename }}
+        asset_content_type: application/kpz
+
+    - name: Upload Release Asset PLUGIN.yml
+      id: upload-release-asset-meta
+      uses: actions/upload-release-asset@v1.0.1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./PLUGIN.yml
+        asset_name: PLUGIN.yml
+        asset_content_type: text/yaml
+
+    - name: Upload Release Asset README.md
+      id: upload-release-asset-readme
+      uses: actions/upload-release-asset@v1.0.1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./README.md
+        asset_name: README.md
+        asset_content_type: text/markdown
+
+    - name: Upload Release Asset CHANGELOG.md
+      id: upload-release-asset-changelog
+      uses: actions/upload-release-asset@v1.0.1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./CHANGELOG.md
+        asset_name: CHANGELOG.md
+        asset_content_type: text/markdown
