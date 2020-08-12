@@ -37,7 +37,7 @@
                                 [% ELSE %]
                                     <input name="enable-[% branchcode | html %]" id="enable-[% branchcode | html %]" value="1" type="checkbox">
                                 [% END %]
-                                <span class="hint">Enable curbvside pickup for <i>[% l.branchname | html %]</i>.</span>
+                                <span class="hint">Enable curbside pickup for <i>[% l.branchname | html %]</i>.</span>
                             </li>
 
                             <li>
@@ -59,7 +59,7 @@
                                 [% ELSE %]
                                     <input name="patron-scheduled-[% branchcode | html %]" id="patron-scheduled-[% branchcode | html %]" value="1" type="checkbox">
                                 [% END %]
-                                <span class="hint">Enable patrons to schedule their own curbvside pickups for <i>[% l.branchname | html %]</i>.</span>
+                                <span class="hint">Enable patrons to schedule their own curbside pickups for <i>[% l.branchname | html %]</i>.</span>
                             </li>
                         </ol>
                     </fieldset>

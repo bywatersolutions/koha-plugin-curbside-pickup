@@ -1,11 +1,4 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.27.0/moment.min.js" integrity="sha512-rmZcZsyhe0/MAjquhTgiUcb4d9knaFc7b5xAfju483gbEXTkeJRUMIPk6s3ySZMYUHEcjKbjLjyddGWMrNEvZg==" crossorigin="anonymous"></script>
-        // Populate the "Pickup library" pulldown with branches that have curbside pickups enabled
-        for (let i = 0; i < policies.length; i++) {
-            let policy = policies[i];
-            if (policy.enabled && ) {
-                $("#pickup-branch").append(`<option value="${policy.branchcode}">${policy.branchname}</option>`);
-            }
-        }
 <script>
 $(document).ready(function() {
     $("#menu ul li:first").after($("<li><a id='my-pickups' href='#'>your curbside pickups</li>"));
@@ -222,8 +215,9 @@ $(document).ready(function() {
                                     </li>
                                     <li>
                                         <label for="pickup_date">Pickup date:</label>
-                                        <input name="pickup_date" type="text" class="form-control" id="datepicker" disabled/>
-                                        <select name="pickup_time" id="pickup-time"></select>
+                                        <input name="pickup_date" type="text" class="form-control" id="datepicker" disabled required="required"/>
+                                        <span class="required">Required</span>
+                                        <select name="pickup_time" id="pickup-time" required="required"></select>
                                     </li>
 
                                     <li>

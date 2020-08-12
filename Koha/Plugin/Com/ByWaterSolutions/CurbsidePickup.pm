@@ -67,17 +67,27 @@ sub tool {
           ? Koha::Patrons->find( { cardnumber => $cardnumber } )
           : Koha::Patrons->find($borrowernumber);
 
-        my $existing_curbside_pickups = Koha::CurbsidePickups->search(
-            {
-                branchcode                => $branchcode,
-                borrowernumber            => $patron->id,
-                delivered_datetime        => undef,
-                scheduled_pickup_datetime => { '>' => \'DATE(NOW())' },
-            }
-        );
+        my $existing_curbside_pickups;
+
+        if ( $patron ){
+            $existing_curbside_pickups = Koha::CurbsidePickups->search(
+                {
+                    branchcode                => $branchcode,
+                    borrowernumber            => $patron->id,
+                    delivered_datetime        => undef,
+                    scheduled_pickup_datetime => { '>' => \'DATE(NOW())' },
+                }
+            );
+        } else {
+            $template->param( problem => {
+                type => 'no_patron_found',
+                cardnumber => $cardnumber
+            });
+        }
 
         $template->param(
             patron      => $patron,
+            tab         => 'schedule-pickup',
             policy_json => to_json( $CurbsidePickupPolicy->TO_JSON ),
             existing_curbside_pickups => $existing_curbside_pickups,
         );
