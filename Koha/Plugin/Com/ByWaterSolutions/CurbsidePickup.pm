@@ -223,31 +223,32 @@ sub tool {
 }
 
 sub _notify_new_pickup {
-    my ($self, $pickup_id) = @_;
-
-    my $pickup = Koha::CurbsidePickups->find($pickup_id);
+    my ( $self, $pickup ) = @_;
 
     my $patron = $pickup->patron;
 
     # Try to get the borrower's email address
     my $to_address = $patron->notice_email_address;
 
-    my $messagingprefs = C4::Members::Messaging::GetMessagingPreferences( {
-            borrowernumber => $borrowernumber,
-            message_name => 'Hold_Filled'
-    } );
+    my $messagingprefs = C4::Members::Messaging::GetMessagingPreferences(
+        {
+            borrowernumber => $patron->id,
+            message_name   => 'Hold_Filled'
+        }
+    );
 
     my $library = $pickup->library->unblessed;
 
-    my $admin_email_address = $library->{branchemail} || C4::Context->preference('KohaAdminEmailAddress');
+    my $admin_email_address = $library->{branchemail}
+      || C4::Context->preference('KohaAdminEmailAddress');
 
     my %letter_params = (
-        module => 'reserves',
+        module     => 'reserves',
         branchcode => $pickup->branchcode,
-        lang => $patron->lang,
-        tables => {
-            'branches'       => $library,
-            'borrowers'      => $patron->unblessed,
+        lang       => $patron->lang,
+        tables     => {
+            'branches'  => $library,
+            'borrowers' => $patron->unblessed,
         },
         substitute => {
             curbside_pickup => $pickup,
@@ -257,29 +258,34 @@ sub _notify_new_pickup {
     my $send_notification = sub {
         my ( $mtt, $letter_code ) = (@_);
         return unless defined $letter_code;
-        $letter_params{letter_code} = $letter_code;
+        $letter_params{letter_code}            = $letter_code;
         $letter_params{message_transport_type} = $mtt;
-        my $letter =  C4::Letters::GetPreparedLetter ( %letter_params );
+        my $letter = C4::Letters::GetPreparedLetter(%letter_params);
         unless ($letter) {
-            warn "Could not find a letter called '$letter_params{'letter_code'}' for $mtt in the 'reserves' module";
+            warn "Could not find a letter called '$letter_params{'letter_code'}' for $mtt in the 'Holds (reserves)' module";
             return;
         }
 
-        C4::Letters::EnqueueLetter( {
-            letter => $letter,
-            borrowernumber => $borrowernumber,
-            from_address => $admin_email_address,
-            message_transport_type => $mtt,
-        } );
+        C4::Letters::EnqueueLetter(
+            {
+                letter                 => $letter,
+                borrowernumber         => $patron->id,
+                from_address           => $admin_email_address,
+                message_transport_type => $mtt,
+            }
+        );
     };
 
-    while ( my ( $mtt, $letter_code ) = each %{ $messagingprefs->{transports} } ) {
-        next if (
-               ( $mtt eq 'email' and not $to_address ) # No email address
-            or ( $mtt eq 'sms'   and not $patron->smsalertnumber ) # No SMS number
-        );
+    while ( my ( $mtt, $letter_code ) =
+        each %{ $messagingprefs->{transports} } )
+    {
+        next
+          if (
+            ( $mtt eq 'email' and not $to_address )    # No email address
+            or ( $mtt eq 'sms' and not $patron->smsalertnumber ) # No SMS number
+          );
 
-        $send_notification($mtt, 'CURBSIDE');
+        $send_notification->( $mtt, 'CURBSIDE' );
     }
 }
 
@@ -366,8 +372,7 @@ sub install() {
 
     my $dbh = C4::Context->dbh;
 
-    $dbh->do(
-        q{
+    $dbh->do(q{
 CREATE TABLE `curbside_pickup_policy` (
   `id` int(11) NOT NULL auto_increment,
   `branchcode` varchar(10) NOT NULL,
@@ -407,11 +412,9 @@ CREATE TABLE `curbside_pickup_policy` (
   UNIQUE KEY (`branchcode`),
   FOREIGN KEY (branchcode) REFERENCES branches(branchcode) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-    }
-    );
+    });
 
-    $dbh->do(
-        q{
+    $dbh->do(q{
 CREATE TABLE `curbside_pickups` (
   `id` int(11) NOT NULL auto_increment,
   `borrowernumber` int(11) NOT NULL,
@@ -428,8 +431,11 @@ CREATE TABLE `curbside_pickups` (
   FOREIGN KEY (borrowernumber) REFERENCES borrowers(borrowernumber) ON DELETE CASCADE ON UPDATE CASCADE,
   FOREIGN KEY (staged_by) REFERENCES borrowers(borrowernumber) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-	}
-    );
+	});
+
+    $dbh->do(q{
+        INSERT INTO `letter` VALUES ('reserves','CURBSIDE','','Curbside pickup',0,'You have schedule a curbside pickup for <<branches.branchname>>','[%- USE KohaDates -%]\r\n[%- SET cp = curbside_pickup -%]\r\n\r\nYou have a curbside pickup scheduled for [% cp.scheduled_pickup_datetime | $KohaDates with_hours => 1 %] at [% cp.library.branchname %].\r\n\r\nAny holds waiting for you at the pickup time will be included in this pickup. At this time, that list includes:\r\n[%- FOREACH h IN cp.patron.holds %]\r\n    [%- IF h.branchcode == cp.branchcode && h.found == \'W\' %]\r\n* [% h.biblio.title %], [% h.biblio.author %] ([% h.item.barcode %])\r\n    [%- END %]\r\n[%- END %]\r\n\r\nOnce you have arrived, please call your library or log into your account and click the \"Alert staff of your arrival\" button to let them know you are there.','email','default');
+    });
 
     return 1;
 }

@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.6] - 2020-08-17
+## Added
+- Added default CURBSIDE notice
+
 ## [1.0.5] - 2020-08-17
 ## Changed
 - Added support for CURBSIDE notice, which will be sent upon initial creation of a curbside pickup
