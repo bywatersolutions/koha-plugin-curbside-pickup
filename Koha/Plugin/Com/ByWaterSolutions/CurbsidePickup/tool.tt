@@ -70,7 +70,7 @@
                                 <tr>
                                     <td>[% cp.scheduled_pickup_datetime | $KohaDates with_hours = 1 %]</td>
                                     <td>
-                                        [% cp.patron.firstname %] [% cp.patron.surname %] ([% cp.patron.cardnumber %])
+                                        <a href="/cgi-bin/koha/members/moremember.pl?borrowernumber=[% cp.borrowernumber %]">[% cp.patron.firstname | html %] [% cp.patron.surname | html %] ([% cp.patron.cardnumber | html %])</a>
                                         [% IF cp.notes %]
                                             <br/>
                                             Notes: [% cp.notes %]
@@ -78,7 +78,7 @@
                                     </td>
                                     <td>
                                         [% FOREACH h IN cp.patron.holds %]
-                                            [% h.biblio.title %] ([% h.biblio.author %], [% h.item.barcode %])<br/>
+                                            <a href="/cgi-bin/koha/catalogue/detail.pl?biblionumber=[% h.biblionumber | html %]">[% h.biblio.title | html %]</a> ([% h.biblio.author | html %], <a href="/cgi-bin/koha/catalogue/moredetail.pl?itemnumber=[% h.itemnumber | html %]&biblionumber=[% h.biblionumber | html %]#item[% h.itemnumber | html %]">[% h.item.barcode | html %]</a>)<br/>
                                         [% END %]
                                     </td>
                                     <td>
@@ -135,7 +135,7 @@
                                 <tr>
                                     <td>[% cp.scheduled_pickup_datetime | $KohaDates with_hours = 1 %]</td>
                                     <td>
-                                        [% cp.patron.firstname %] [% cp.patron.surname %] ([% cp.patron.cardnumber %])
+                                        <a href="/cgi-bin/koha/members/moremember.pl?borrowernumber=[% cp.borrowernumber | html %]">[% cp.patron.firstname | html %] [% cp.patron.surname | html %] ([% cp.patron.cardnumber | html %])</a>
                                         [% IF cp.notes %]
                                             <br/>
                                             Notes: [% cp.notes %]
@@ -143,7 +143,7 @@
                                     </td>
                                     <td>
                                         [% FOREACH h IN cp.patron.holds %]
-                                            [% h.biblio.title %] ([% h.biblio.author %], [% h.item.barcode %])<br/>
+                                            <a href="/cgi-bin/koha/catalogue/detail.pl?biblionumber=[% h.biblionumber | html %]">[% h.biblio.title | html %]</a> ([% h.biblio.author | html %], <a href="/cgi-bin/koha/catalogue/moredetail.pl?itemnumber=[% h.itemnumber | html %]&biblionumber=[% h.biblionumber | html %]#item[% h.itemnumber | html %]">[% h.item.barcode | html %]</a>)<br/>
                                         [% END %]
                                     </td>
                                     <td>
@@ -213,7 +213,7 @@
                                 <tr>
                                     <td>[% cp.scheduled_pickup_datetime | $KohaDates with_hours = 1 %]</td>
                                     <td>
-                                        [% cp.patron.firstname %] [% cp.patron.surname %] ([% cp.patron.cardnumber %])
+                                        <a href="/cgi-bin/koha/members/moremember.pl?borrowernumber=[% cp.borrowernumber | html %]">[% cp.patron.firstname | html %] [% cp.patron.surname | html %] ([% cp.patron.cardnumber | html %])</a>
                                         [% IF cp.notes %]
                                             <br/>
                                             Notes: [% cp.notes %]
@@ -221,7 +221,7 @@
                                     </td>
                                     <td>
                                         [% FOREACH h IN cp.patron.holds %]
-                                            [% h.biblio.title %] ([% h.biblio.author %], [% h.item.barcode %])<br/>
+                                            <a href="/cgi-bin/koha/catalogue/detail.pl?biblionumber=[% h.biblionumber | html %]">[% h.biblio.title | html %]</a> ([% h.biblio.author | html %], <a href="/cgi-bin/koha/catalogue/moredetail.pl?itemnumber=[% h.itemnumber | html %]&biblionumber=[% h.biblionumber | html %]#item[% h.itemnumber | html %]">[% h.item.barcode | html %]</a>)<br/>
                                         [% END %]
                                     </td>
                                     <td>
@@ -289,7 +289,7 @@
                                 <tr>
                                     <td>[% cp.delivered_datetime | $KohaDates with_hours = 1 %]</td>
                                     <td>
-                                        [% cp.patron.firstname %] [% cp.patron.surname %] ([% cp.patron.cardnumber %])
+                                        <a href="/cgi-bin/koha/members/moremember.pl?borrowernumber=[% cp.borrowernumber | html %]">[% cp.patron.firstname | html %] [% cp.patron.surname | html %] ([% cp.patron.cardnumber | html %])</a>
                                         [% IF cp.notes %]
                                             <br/>
                                             Notes: [% cp.notes %]
@@ -298,7 +298,7 @@
                                     <td>
                                         [% FOREACH c IN cp.patron.checkouts %]
                                             [% IF date.format(c.issuedate, format = '%Y-%m-%d') == date.format(date.now, format = '%Y-%m-%d') %]
-                                                [% c.item.biblio.title %] ([% c.item.biblio.author %], [% c.item.barcode %])<br/>
+                                                <a href="/cgi-bin/koha/catalogue/detail.pl?biblionumber=[% c.item.biblionumber | html %]">[% c.item.biblio.title | html %]</a> ([% c.item.biblio.author | html %], <a href="/cgi-bin/koha/catalogue/moredetail.pl?itemnumber=[% c.itemnumber | html %]&biblionumber=[% c.item.biblionumber | html %]#item[% c.itemnumber | html %]">[% c.item.barcode | html %]</a>)<br/>
                                             [% END %]
                                         [% END %]
                                     </td>
@@ -352,7 +352,9 @@
                         <div class="col-sm-10">
                             [% FOREACH h IN patron.holds %]
                                 [% IF h.found == 'W' && h.branchcode == Branches.GetLoggedInBranchcode %]
-                                    <p class="form-control-static">[% h.biblio.title %] ( [% h.item.barcode %] )</p>
+                                    <p class="form-control-static">
+                                        <a href="/cgi-bin/koha/catalogue/detail.pl?biblionumber=[% h.biblionumber | html %]">[% h.biblio.title | html %]</a> ([% h.biblio.author | html %], <a href="/cgi-bin/koha/catalogue/moredetail.pl?itemnumber=[% h.itemnumber | html %]&biblionumber=[% h.biblionumber | html %]#item[% h.itemnumber | html %]">[% h.item.barcode | html %]</a>)
+                                    </p>
                                 [% END %]
                             [% END %]
                         </div>
