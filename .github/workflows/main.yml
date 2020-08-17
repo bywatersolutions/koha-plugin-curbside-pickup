@@ -132,6 +132,7 @@ jobs:
         release-version: ${{ steps.semvers.outputs.v_patch }}
         release-name: ${{ steps.myvars.outputs.GITHUB_REPO }}
         minimum-version: ${{ steps.koha-version-oldstable.outputs.version-major-minor }}
+        plugin-module: "Koha/Plugin/Com/ByWaterSolutions/CurbsidePickup.pm"
 
     - name: See if kpz was created
       run: |
