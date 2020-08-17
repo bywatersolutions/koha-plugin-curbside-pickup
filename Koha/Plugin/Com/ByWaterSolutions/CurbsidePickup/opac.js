@@ -265,15 +265,11 @@ $(document).ready(function() {
 
             if (existing_pickup) {
                 $('#existing-pickup-warning').show();
-                $('#datepicker').prop('disabled', true);
+                $('#datepicker').datepicker( "option", "disabled", true );
             } else {
                 $('#existing-pickup-warning').hide();
-
-                if (branchcode != "SELECT_A_LIBRARY") {
-                    $('#datepicker').prop('disabled', false);
-                } else {
-                    $('#datepicker').prop('disabled', true);
-                }
+                console.log("SDFDSF");
+                $('#datepicker').datepicker( "option", "disabled", branchcode == "SELECT_A_LIBRARY" );
             }
         });
 
@@ -318,6 +314,7 @@ $(document).ready(function() {
         $('.toptabs').tabs();
 
         $("#datepicker").datepicker();
+        $('#datepicker').datepicker( "option", "disabled", true );
 
         $("#pickup-time").hide();
 
