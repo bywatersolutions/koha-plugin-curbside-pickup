@@ -78,7 +78,9 @@
                                     </td>
                                     <td>
                                         [% FOREACH h IN cp.patron.holds %]
-                                            <a href="/cgi-bin/koha/catalogue/detail.pl?biblionumber=[% h.biblionumber | html %]">[% h.biblio.title | html %]</a> ([% h.biblio.author | html %], <a href="/cgi-bin/koha/catalogue/moredetail.pl?itemnumber=[% h.itemnumber | html %]&biblionumber=[% h.biblionumber | html %]#item[% h.itemnumber | html %]">[% h.item.barcode | html %]</a>)<br/>
+                                            [% IF h.found == 'W' && h.branchcode == branchcode %]
+                                               <a href="/cgi-bin/koha/catalogue/detail.pl?biblionumber=[% h.biblionumber | html %]">[% h.biblio.title | html %]</a> ([% h.biblio.author | html %], <a href="/cgi-bin/koha/catalogue/moredetail.pl?itemnumber=[% h.itemnumber | html %]&biblionumber=[% h.biblionumber | html %]#item[% h.itemnumber | html %]">[% h.item.barcode | html %]</a>)<br/>
+                                            [% END %]
                                         [% END %]
                                     </td>
                                     <td>
@@ -143,7 +145,9 @@
                                     </td>
                                     <td>
                                         [% FOREACH h IN cp.patron.holds %]
-                                            <a href="/cgi-bin/koha/catalogue/detail.pl?biblionumber=[% h.biblionumber | html %]">[% h.biblio.title | html %]</a> ([% h.biblio.author | html %], <a href="/cgi-bin/koha/catalogue/moredetail.pl?itemnumber=[% h.itemnumber | html %]&biblionumber=[% h.biblionumber | html %]#item[% h.itemnumber | html %]">[% h.item.barcode | html %]</a>)<br/>
+                                            [% IF h.found == 'W' && h.branchcode == branchcode %]
+                                               <a href="/cgi-bin/koha/catalogue/detail.pl?biblionumber=[% h.biblionumber | html %]">[% h.biblio.title | html %]</a> ([% h.biblio.author | html %], <a href="/cgi-bin/koha/catalogue/moredetail.pl?itemnumber=[% h.itemnumber | html %]&biblionumber=[% h.biblionumber | html %]#item[% h.itemnumber | html %]">[% h.item.barcode | html %]</a>)<br/>
+                                            [% END %]
                                         [% END %]
                                     </td>
                                     <td>
@@ -221,7 +225,9 @@
                                     </td>
                                     <td>
                                         [% FOREACH h IN cp.patron.holds %]
-                                            <a href="/cgi-bin/koha/catalogue/detail.pl?biblionumber=[% h.biblionumber | html %]">[% h.biblio.title | html %]</a> ([% h.biblio.author | html %], <a href="/cgi-bin/koha/catalogue/moredetail.pl?itemnumber=[% h.itemnumber | html %]&biblionumber=[% h.biblionumber | html %]#item[% h.itemnumber | html %]">[% h.item.barcode | html %]</a>)<br/>
+                                            [% IF h.found == 'W' && h.branchcode == branchcode %]
+                                               <a href="/cgi-bin/koha/catalogue/detail.pl?biblionumber=[% h.biblionumber | html %]">[% h.biblio.title | html %]</a> ([% h.biblio.author | html %], <a href="/cgi-bin/koha/catalogue/moredetail.pl?itemnumber=[% h.itemnumber | html %]&biblionumber=[% h.biblionumber | html %]#item[% h.itemnumber | html %]">[% h.item.barcode | html %]</a>)<br/>
+                                            [% END %]
                                         [% END %]
                                     </td>
                                     <td>
@@ -351,7 +357,7 @@
                         <label class="col-sm-2 control-label">Items ready for pickup:</label>
                         <div class="col-sm-10">
                             [% FOREACH h IN patron.holds %]
-                                [% IF h.found == 'W' && h.branchcode == Branches.GetLoggedInBranchcode %]
+                                [% IF h.found == 'W' && h.branchcode == branchcode %]
                                     <p class="form-control-static">
                                         <a href="/cgi-bin/koha/catalogue/detail.pl?biblionumber=[% h.biblionumber | html %]">[% h.biblio.title | html %]</a> ([% h.biblio.author | html %], <a href="/cgi-bin/koha/catalogue/moredetail.pl?itemnumber=[% h.itemnumber | html %]&biblionumber=[% h.biblionumber | html %]#item[% h.itemnumber | html %]">[% h.item.barcode | html %]</a>)
                                     </p>
