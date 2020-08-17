@@ -33,6 +33,9 @@ Returns existing future pickups for the given patron
 =cut
 
 sub pickups {
+	require Koha::CurbsidePickups;
+	require Koha::CurbsidePickupPolicies;
+
     my $c = shift->openapi->valid_input or return;
 
     my $patron_id = $c->validation->param('patron_id');
@@ -80,6 +83,9 @@ Creates and returns a new pickup for the given patron
 =cut
 
 sub create_pickup {
+	require Koha::CurbsidePickups;
+	require Koha::CurbsidePickupPolicies;
+
     my $c = shift->openapi->valid_input or return;
 
     my $patron_id = $c->validation->param('patron_id');
@@ -139,6 +145,9 @@ Creates and returns a new pickup for the given patron
 =cut
 
 sub delete_pickup {
+	require Koha::CurbsidePickups;
+	require Koha::CurbsidePickupPolicies;
+
     my $c = shift->openapi->valid_input or return;
 
     my $patron_id = $c->validation->param('patron_id');
@@ -178,6 +187,9 @@ Returns all existing scheduled curbside pickups
 =cut
 
 sub all_pickups {
+	require Koha::CurbsidePickups;
+	require Koha::CurbsidePickupPolicies;
+
     my $c = shift->openapi->valid_input or return;
 
     my $curbside_pickups = Koha::CurbsidePickups->search(
@@ -211,6 +223,9 @@ Returns all library pickup policies
 =cut
 
 sub all_policies {
+	require Koha::CurbsidePickups;
+	require Koha::CurbsidePickupPolicies;
+
     my $c = shift->openapi->valid_input or return;
 
     my $policies = Koha::CurbsidePickupPolicies->search();
@@ -233,6 +248,9 @@ Indicates the patron has arrived for the given curbside pickup appointment
 =cut
 
 sub mark_arrived {
+	require Koha::CurbsidePickups;
+	require Koha::CurbsidePickupPolicies;
+
     my $c = shift->openapi->valid_input or return;
 
     my $patron_id = $c->validation->param('patron_id');
