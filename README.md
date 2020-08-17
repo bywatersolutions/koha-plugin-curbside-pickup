@@ -62,3 +62,8 @@ This tab contains the form to schedule a new curbside pickup.
 Simply search for the patron's cardnumber or use the "Schedule pickup" button on the patron record.
 Choose the pickup day and a list of times will display.
 To the right of the given time, in parentheses is the number of pickups already scheduled for that time slot.
+
+When a pickup is scheduled, Koha will look for a `CURBSIDE` notice in the Holds module.
+If this notice exists it will be sent to the patron.
+This notice supports email and SMS.
+A default version of this notice should have been installed by the plugin.
