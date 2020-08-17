@@ -1,4 +1,7 @@
 [% USE KohaDates %]
+[% USE format %]
+[% USE format_minutes = format('%02d') %]
+[% MACRO minutes_format BLOCK %][% IF m != "" %][% format_minutes(m) %][% END %][% END %]
 [% SET footerjs = 1 %]
 [% INCLUDE 'doc-head-open.inc' %]
  <title>Koha: Curbside pickup: Configuration</title>
@@ -69,101 +72,106 @@
 
                         <ol>
                             <li>
+                                <label></label>
+                                Times should be in 24-hour format ( 00:00 to 23:59 ).
+                            </li>
+
+                            <li>
                                 <label>Sunday: </label>
 
-                                <input name="pickup-start-hour-sunday-[% branchcode | html %]" size="3" value="[% policies.$branchcode.sunday_start_hour %]" type="text">
+                                <input name="pickup-start-hour-sunday-[% branchcode | html %]" size="3" value="[% minutes_format(m=policies.$branchcode.sunday_start_hour) %]" type="text">
                                 :
-                                <input name="pickup-start-minute-sunday-[% branchcode | html %]" size="3" value="[% policies.$branchcode.sunday_start_minute %]" type="text">
+                                <input name="pickup-start-minute-sunday-[% branchcode | html %]" size="3" value="[% minutes_format(m=policies.$branchcode.sunday_start_minute) %]" type="text">
 
                                 to
 
-                                <input name="pickup-end-hour-sunday-[% branchcode | html %]" size="3" value="[% policies.$branchcode.sunday_end_hour %]" type="text">
+                                <input name="pickup-end-hour-sunday-[% branchcode | html %]" size="3" value="[% minutes_format(m=policies.$branchcode.sunday_end_hour) %]" type="text">
                                 :
-                                <input name="pickup-end-minute-sunday-[% branchcode | html %]" size="3" value="[% policies.$branchcode.sunday_end_minute %]" type="text">
+                                <input name="pickup-end-minute-sunday-[% branchcode | html %]" size="3" value="[% minutes_format(m=policies.$branchcode.sunday_end_minute) %]" type="text">
                             </li>
 
                             <li>
                                 <label>Monday: </label>
 
-                                <input name="pickup-start-hour-monday-[% branchcode | html %]" size="3" value="[% policies.$branchcode.monday_start_hour %]" type="text">
+                                <input name="pickup-start-hour-monday-[% branchcode | html %]" size="3" value="[% minutes_format(m=policies.$branchcode.monday_start_hour) %]" type="text">
                                 :
-                                <input name="pickup-start-minute-monday-[% branchcode | html %]" size="3" value="[% policies.$branchcode.monday_start_minute %]" type="text">
+                                <input name="pickup-start-minute-monday-[% branchcode | html %]" size="3" value="[% minutes_format(m=policies.$branchcode.monday_start_minute) %]" type="text">
 
                                 to
 
-                                <input name="pickup-end-hour-monday-[% branchcode | html %]" size="3" value="[% policies.$branchcode.monday_end_hour %]" type="text">
+                                <input name="pickup-end-hour-monday-[% branchcode | html %]" size="3" value="[% minutes_format(m=policies.$branchcode.monday_end_hour) %]" type="text">
                                 :
-                                <input name="pickup-end-minute-monday-[% branchcode | html %]" size="3" value="[% policies.$branchcode.monday_end_minute %]" type="text">
+                                <input name="pickup-end-minute-monday-[% branchcode | html %]" size="3" value="[% minutes_format(m=policies.$branchcode.monday_end_minute) %]" type="text">
                             </li>
 
                             <li>
                                 <label>Tuesday: </label>
 
-                                <input name="pickup-start-hour-tuesday-[% branchcode | html %]" size="3" value="[% policies.$branchcode.tuesday_start_hour %]" type="text">
+                                <input name="pickup-start-hour-tuesday-[% branchcode | html %]" size="3" value="[% minutes_format(m=policies.$branchcode.tuesday_start_hour) %]" type="text">
                                 :
-                                <input name="pickup-start-minute-tuesday-[% branchcode | html %]" size="3" value="[% policies.$branchcode.tuesday_start_minute %]" type="text">
+                                <input name="pickup-start-minute-tuesday-[% branchcode | html %]" size="3" value="[% minutes_format(m=policies.$branchcode.tuesday_start_minute) %]" type="text">
 
                                 to
 
-                                <input name="pickup-end-hour-tuesday-[% branchcode | html %]" size="3" value="[% policies.$branchcode.tuesday_end_hour %]" type="text">
+                                <input name="pickup-end-hour-tuesday-[% branchcode | html %]" size="3" value="[% minutes_format(m=policies.$branchcode.tuesday_end_hour) %]" type="text">
                                 :
-                                <input name="pickup-end-minute-tuesday-[% branchcode | html %]" size="3" value="[% policies.$branchcode.tuesday_end_minute %]" type="text">
+                                <input name="pickup-end-minute-tuesday-[% branchcode | html %]" size="3" value="[% minutes_format(m=policies.$branchcode.tuesday_end_minute) %]" type="text">
                             </li>
 
                             <li>
                                 <label>Wednesday: </label>
 
-                                <input name="pickup-start-hour-wednesday-[% branchcode | html %]" size="3" value="[% policies.$branchcode.wednesday_start_hour %]" type="text">
+                                <input name="pickup-start-hour-wednesday-[% branchcode | html %]" size="3" value="[% minutes_format(m=policies.$branchcode.wednesday_start_hour) %]" type="text">
                                 :
-                                <input name="pickup-start-minute-wednesday-[% branchcode | html %]" size="3" value="[% policies.$branchcode.wednesday_start_minute %]" type="text">
+                                <input name="pickup-start-minute-wednesday-[% branchcode | html %]" size="3" value="[% minutes_format(m=policies.$branchcode.wednesday_start_minute) %]" type="text">
 
                                 to
 
-                                <input name="pickup-end-hour-wednesday-[% branchcode | html %]" size="3" value="[% policies.$branchcode.wednesday_end_hour %]" type="text">
+                                <input name="pickup-end-hour-wednesday-[% branchcode | html %]" size="3" value="[% minutes_format(m=policies.$branchcode.wednesday_end_hour) %]" type="text">
                                 :
-                                <input name="pickup-end-minute-wednesday-[% branchcode | html %]" size="3" value="[% policies.$branchcode.wednesday_end_minute %]" type="text">
+                                <input name="pickup-end-minute-wednesday-[% branchcode | html %]" size="3" value="[% minutes_format(m=policies.$branchcode.wednesday_end_minute) %]" type="text">
                             </li>
 
                             <li>
                                 <label>Thursday: </label>
 
-                                <input name="pickup-start-hour-thursday-[% branchcode | html %]" size="3" value="[% policies.$branchcode.thursday_start_hour %]" type="text">
+                                <input name="pickup-start-hour-thursday-[% branchcode | html %]" size="3" value="[% minutes_format(m=policies.$branchcode.thursday_start_hour) %]" type="text">
                                 :
-                                <input name="pickup-start-minute-thursday-[% branchcode | html %]" size="3" value="[% policies.$branchcode.thursday_start_minute %]" type="text">
+                                <input name="pickup-start-minute-thursday-[% branchcode | html %]" size="3" value="[% minutes_format(m=policies.$branchcode.thursday_start_minute) %]" type="text">
 
                                 to
 
-                                <input name="pickup-end-hour-thursday-[% branchcode | html %]" size="3" value="[% policies.$branchcode.thursday_end_hour %]" type="text">
+                                <input name="pickup-end-hour-thursday-[% branchcode | html %]" size="3" value="[% minutes_format(m=policies.$branchcode.thursday_end_hour) %]" type="text">
                                 :
-                                <input name="pickup-end-minute-thursday-[% branchcode | html %]" size="3" value="[% policies.$branchcode.thursday_end_minute %]" type="text">
+                                <input name="pickup-end-minute-thursday-[% branchcode | html %]" size="3" value="[% minutes_format(m=policies.$branchcode.thursday_end_minute) %]" type="text">
                             </li>
 
                             <li>
                                 <label>Friday: </label>
 
-                                <input name="pickup-start-hour-friday-[% branchcode | html %]" size="3" value="[% policies.$branchcode.friday_start_hour %]" type="text">
+                                <input name="pickup-start-hour-friday-[% branchcode | html %]" size="3" value="[% minutes_format(m=policies.$branchcode.friday_start_hour) %]" type="text">
                                 :
-                                <input name="pickup-start-minute-friday-[% branchcode | html %]" size="3" value="[% policies.$branchcode.friday_start_minute %]" type="text">
+                                <input name="pickup-start-minute-friday-[% branchcode | html %]" size="3" value="[% minutes_format(m=policies.$branchcode.friday_start_minute) %]" type="text">
 
                                 to
 
-                                <input name="pickup-end-hour-friday-[% branchcode | html %]" size="3" value="[% policies.$branchcode.friday_end_hour %]" type="text">
+                                <input name="pickup-end-hour-friday-[% branchcode | html %]" size="3" value="[% minutes_format(m=policies.$branchcode.friday_end_hour) %]" type="text">
                                 :
-                                <input name="pickup-end-minute-friday-[% branchcode | html %]" size="3" value="[% policies.$branchcode.friday_end_minute %]" type="text">
+                                <input name="pickup-end-minute-friday-[% branchcode | html %]" size="3" value="[% minutes_format(m=policies.$branchcode.friday_end_minute) %]" type="text">
                             </li>
 
                             <li>
                                 <label>Saturday: </label>
 
-                                <input name="pickup-start-hour-saturday-[% branchcode | html %]" size="3" value="[% policies.$branchcode.saturday_start_hour %]" type="text">
+                                <input name="pickup-start-hour-saturday-[% branchcode | html %]" size="3" value="[% minutes_format(m=policies.$branchcode.saturday_start_hour) %]" type="text">
                                 :
-                                <input name="pickup-start-minute-saturday-[% branchcode | html %]" size="3" value="[% policies.$branchcode.saturday_start_minute %]" type="text">
+                                <input name="pickup-start-minute-saturday-[% branchcode | html %]" size="3" value="[% minutes_format(m=policies.$branchcode.saturday_start_minute) %]" type="text">
 
                                 to
 
-                                <input name="pickup-end-hour-saturday-[% branchcode | html %]" size="3" value="[% policies.$branchcode.saturday_end_hour %]" type="text">
+                                <input name="pickup-end-hour-saturday-[% branchcode | html %]" size="3" value="[% minutes_format(m=policies.$branchcode.saturday_end_hour) %]" type="text">
                                 :
-                                <input name="pickup-end-minute-saturday-[% branchcode | html %]" size="3" value="[% policies.$branchcode.saturday_end_minute %]" type="text">
+                                <input name="pickup-end-minute-saturday-[% branchcode | html %]" size="3" value="[% minutes_format(m=policies.$branchcode.saturday_end_minute) %]" type="text">
                             </li>
                         </ol>
                     </fieldset>

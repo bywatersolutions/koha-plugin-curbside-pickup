@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.6] - 2020-08-17
 ## Added
 - Added default CURBSIDE notice
+- Hours and minutes in configuration are now formatted correctly for 24-hour time
 
 ## [1.0.5] - 2020-08-17
 ## Changed
