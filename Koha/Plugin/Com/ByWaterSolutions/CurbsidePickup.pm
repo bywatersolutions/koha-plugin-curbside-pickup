@@ -123,6 +123,7 @@ sub tool {
                     notes                     => $notes,
                 }
             )->store();
+            $self->_notify_new_pickup($curbside_pickup);
         }
     }
     elsif ( $action eq 'cancel' ) {
@@ -219,6 +220,67 @@ sub tool {
         tab              => $cgi->param('tab'),
     );
     $self->output_html( $template->output() );
+}
+
+sub _notify_new_pickup {
+    my ($self, $pickup_id) = @_;
+
+    my $pickup = Koha::CurbsidePickups->find($pickup_id);
+
+    my $patron = $pickup->patron;
+
+    # Try to get the borrower's email address
+    my $to_address = $patron->notice_email_address;
+
+    my $messagingprefs = C4::Members::Messaging::GetMessagingPreferences( {
+            borrowernumber => $borrowernumber,
+            message_name => 'Hold_Filled'
+    } );
+
+    my $library = $pickup->library->unblessed;
+
+    my $admin_email_address = $library->{branchemail} || C4::Context->preference('KohaAdminEmailAddress');
+
+    my %letter_params = (
+        module => 'reserves',
+        branchcode => $pickup->branchcode,
+        lang => $patron->lang,
+        tables => {
+            'branches'       => $library,
+            'borrowers'      => $patron->unblessed,
+        },
+        substitute => {
+            curbside_pickup => $pickup,
+        }
+    );
+
+    my $send_notification = sub {
+        my ( $mtt, $letter_code ) = (@_);
+        return unless defined $letter_code;
+        $letter_params{letter_code} = $letter_code;
+        $letter_params{message_transport_type} = $mtt;
+        my $letter =  C4::Letters::GetPreparedLetter ( %letter_params );
+        unless ($letter) {
+            warn "Could not find a letter called '$letter_params{'letter_code'}' for $mtt in the 'reserves' module";
+            return;
+        }
+
+        C4::Letters::EnqueueLetter( {
+            letter => $letter,
+            borrowernumber => $borrowernumber,
+            from_address => $admin_email_address,
+            message_transport_type => $mtt,
+        } );
+    };
+
+    while ( my ( $mtt, $letter_code ) = each %{ $messagingprefs->{transports} } ) {
+        next if (
+               ( $mtt eq 'email' and not $to_address ) # No email address
+            or ( $mtt eq 'sms'   and not $patron->smsalertnumber ) # No SMS number
+        );
+
+        $send_notification($mtt, 'CURBSIDE');
+    }
 }
 
 sub opac_js {
