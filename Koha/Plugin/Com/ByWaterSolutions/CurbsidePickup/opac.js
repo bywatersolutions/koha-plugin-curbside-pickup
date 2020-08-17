@@ -80,8 +80,6 @@ $(document).ready(function() {
     }
 
     $('body').on('change', '#datepicker', function() {
-        $('#schedule-pickup-button').prop('disabled', false);
-
         // Grab the policy and list of existing curbside pickups based on the selected library
         let branchcode = $('#pickup-branch').val();
         let existingPickupMoments = existingPickupMomentsByLibrary[branchcode];
@@ -115,6 +113,7 @@ $(document).ready(function() {
         let pickupIntervalStartMoment = workingTimeMoment.clone();
         let pickupIntervalEndMoment = pickupIntervalStartMoment.clone()
         pickupIntervalEndMoment.add(pickup_interval, 'minutes');
+        let available_count = 0;
         let pickupSlots = [];
         while (keep_going) {
 
@@ -151,6 +150,8 @@ $(document).ready(function() {
                 "pickups_scheduled": pickups_scheduled
             });
 
+            if ( available ) available_count++;
+
             pickupIntervalStartMoment = pickupIntervalEndMoment.clone();
             pickupIntervalEndMoment.add(pickup_interval, 'minutes');
             if (pickupIntervalEndMoment.isAfter(listEndMoment)) {
@@ -170,6 +171,8 @@ $(document).ready(function() {
         }
 
         $('#pickup-time').show();
+
+        $('#schedule-pickup-button').prop('disabled', available_count <= 0);
     });
 
     // Adds the curbside pickups tab and the "your pickups" and "schedule a pickup" tab.
