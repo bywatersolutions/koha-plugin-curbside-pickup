@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.8] - 2020-08-17
 ## Added
 - Filter out holds from status tabs that are not waiting at the logged in library
+- Disable submit button on staff side until a valid pickup slot is selected
 
 ## [1.0.8] - 2020-08-17
 ## Added
