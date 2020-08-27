@@ -64,3 +64,8 @@ When a pickup is scheduled, Koha will look for a `CURBSIDE` notice in the Holds 
 If this notice exists it will be sent to the patron.
 This notice supports email and SMS.
 A default version of this notice should have been installed by the plugin.
+
+## Acknowledgments
+This plugin was originally developed following a specification and design
+created by staff members from the Equinox Open Library Initiative, including
+Andrea Buntz Neiman, Sally Fortin, and Galen Charlton.
