@@ -4,10 +4,7 @@
 From the [release page](https://github.com/bywatersolutions/koha-plugin-curbside-pickup/releases) you can download the last KPZ file.
 
 ## Installation
-This plugin requires [Bug 26163](https://bugs.koha-community.org/bugzilla3/show_bug.cgi?id=26163) to run.
-It is relatively simply to modify the `koha-plack` script 
-
-Once those changes to `koha-plack` have been made, make sure to restart plack, then upload the plugin.
+Install the plugin as normal, then restart Plack.
 
 ## Configuration
 The plugin configuration has a tab for each library set up in your Koha instance.

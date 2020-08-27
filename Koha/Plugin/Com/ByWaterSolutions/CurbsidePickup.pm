@@ -15,6 +15,26 @@ use C4::Circulation;
 use Koha::DateUtils;
 use Koha::Libraries;
 
+use Module::Metadata;
+use Koha::Schema;
+BEGIN {
+    my $path = Module::Metadata->find_module_by_name(__PACKAGE__);
+    $path =~ s!\.pm$!/lib!;
+    unshift @INC, $path;
+
+    require Koha::CurbsidePickups;
+    require Koha::CurbsidePickupPolicies;
+    require Koha::Schema::Result::CurbsidePickupPolicy;
+    require Koha::Schema::Result::CurbsidePickup;
+
+    # register the additional schema classes
+    Koha::Schema->register_class(CurbsidePickup => 'Koha::Schema::Result::CurbsidePickup');
+    Koha::Schema->register_class(CurbsidePickupPolicy => 'Koha::Schema::Result::CurbsidePickupPolicy');
+    # ... and force a refresh of the database handle so that it includes
+    # the new classes
+    Koha::Database->schema({ new => 1 });
+}
+
 our $VERSION         = "{VERSION}";
 our $MINIMUM_VERSION = "{MINIMUM_VERSION}";
 
@@ -41,11 +61,6 @@ sub new {
 }
 
 sub tool {
-    require Koha::CurbsidePickups;
-    require Koha::CurbsidePickupPolicies;
-    require Koha::Schema::Result::CurbsidePickupPolicy;
-    require Koha::Schema::Result::CurbsidePickup;
-
     my ( $self, $args ) = @_;
 
     my $cgi      = $self->{'cgi'};
@@ -302,11 +317,6 @@ sub intranet_js {
 }
 
 sub configure {
-    require Koha::CurbsidePickups;
-    require Koha::CurbsidePickupPolicies;
-    require Koha::Schema::Result::CurbsidePickupPolicy;
-    require Koha::Schema::Result::CurbsidePickup;
-
     my ( $self, $args ) = @_;
     my $cgi = $self->{'cgi'};
 
