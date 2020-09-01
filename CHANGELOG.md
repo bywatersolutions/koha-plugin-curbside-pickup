@@ -4,7 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.14] - 2020-09-01
+## [1.0.16] - 2020-09-01
+## Changed
+- Only show branches available for pickup in OPAC library selector.
+
+## [1.0.15] - 2020-09-01
 ## Changed
 - Fix bug caused by missing js variable
 

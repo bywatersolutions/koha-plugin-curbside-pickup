@@ -176,7 +176,7 @@ function update_data() {
 
         $("#pickup-branch").find('option').remove();
 
-        if (policy.enabled && policy.patron_scheduled_pickup) {
+        if (policy.enabled == "1" && policy.patron_scheduled_pickup == "1") {
             enable_patron_scheduled_pickup = true;
             $("#pickup-branch").append(`<option value="${policy.branchcode}">${policy.branchname}</option>`);
         }
@@ -324,7 +324,7 @@ function generate_html() {
     // Populate the "Pickup library" pulldown with branches that have curbside pickups enabled
     for (let i = 0; i < policies.length; i++) {
         let policy = policies[i];
-        if (policy.enabled && policy.patron_scheduled_pickup) {
+        if (policy.enabled == "1" && policy.patron_scheduled_pickup == "1") {
             $("#pickup-branch").append(`<option value="${policy.branchcode}">${policy.branchname}</option>`);
         }
     }
