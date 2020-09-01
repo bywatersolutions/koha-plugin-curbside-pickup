@@ -6,8 +6,10 @@ let policies;
 let existingPickupMomentsByLibrary = {};
 let policiesByLibrary = {};
 let enable_patron_scheduled_pickup = false;
+let borrowernumber;
 
 $(document).ready(function() {
+    borrowernumber = $(".loggedinusername").data('borrowernumber');
     $("#menu ul li:first").after($("<li><a id='my-pickups' href='#'>your curbside pickups</li>"));
 
     $('body').on('change', '#datepicker', function() {
