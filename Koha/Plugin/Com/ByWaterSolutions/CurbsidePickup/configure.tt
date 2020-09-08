@@ -1,5 +1,6 @@
 [% USE KohaDates %]
 [% USE format %]
+[% USE raw %]
 [% USE format_minutes = format('%02d') %]
 [% MACRO minutes_format BLOCK %][% IF m != "" %][% format_minutes(m) %][% END %][% END %]
 [% SET footerjs = 1 %]
@@ -11,7 +12,7 @@
 [% INCLUDE 'header.inc' %]
 [% INCLUDE 'cat-search.inc' %]
 
-<div id="breadcrumbs"><a href="/cgi-bin/koha/mainpage.pl">Home</a> &rsaquo; <a href="/cgi-bin/koha/plugins/plugins-home.pl">Plugins</a> &rsaquo; Curbside pickup &rsaquo; Configuration</div>
+<div id="breadcrumbs"><a href="/cgi-bin/koha/mainpage.pl" data-i18n-key="BREADCRUMBS_HOME"></a> &rsaquo; <a href="/cgi-bin/koha/plugins/plugins-home.pl" data-i18n-key="BREADCRUMBS_PLUGINS"></a> &rsaquo; Curbside pickup &rsaquo; <span data-i18n-key="BREADCRUMBS_CONF"></span></div>
 
 <div id="doc3">
     <form method="post">
@@ -30,60 +31,60 @@
                 [% SET branchcode = l.branchcode %]
                 <div id="conf-[% l.branchcode | html %]">
                     <fieldset class="rows">
-                        <legend>Options for <i>[% l.branchname %]</i></legend>
+                        <legend data-i18n-key="LIB_LEGEND" data-i18n-format="[% l.branchname | html %]"></legend>
 
                         <ol>
                             <li>
-                                <label for="enable-[% branchcode | html %]">Enable: </label>
+                                <label for="enable-[% branchcode | html %]" data-i18n-key="ENABLE_LABEL"></label>
                                 [% IF policies.$branchcode.enabled %]
                                     <input name="enable-[% branchcode | html %]" id="enable-[% branchcode | html %]" value="1" type="checkbox" checked>
                                 [% ELSE %]
                                     <input name="enable-[% branchcode | html %]" id="enable-[% branchcode | html %]" value="1" type="checkbox">
                                 [% END %]
-                                <span class="hint">Enable curbside pickup for <i>[% l.branchname | html %]</i>.</span>
+                                <span class="hint" data-i18n-key="ENABLE_HINT" data-i18n-format="[% l.branchname | html %]"></span>
                             </li>
 
                             <li>
-                                <label for="interval-[% branchcode | html %]">Pickup interval: </label>
+                                <label for="interval-[% branchcode | html %]" data-i18n-key="INTERVAL_LABEL"></label>
                                 <input name="interval-[% branchcode | html %]" id="interval-[% branchcode | html %]" value="[% policies.$branchcode.pickup_interval %]" type="text">
-                                <span class="hint">Number of minutes each curbside pickup interaction will take.</span>
+                                <span class="hint" data-i18n-key="INTERVAL_HINT"></span>
                             </li>
 
                             <li>
-                                <label for="max-per-interval-[% branchcode | html %]">Maximum patrons per interval: </label>
+                                <label for="max-per-interval-[% branchcode | html %]" data-i18n-key="MAX_PATRON_LABEL"></label>
                                 <input name="max-per-interval-[% branchcode | html %]" id="max-per-interval-[% branchcode | html %]" value="[% policies.$branchcode.patrons_per_interval %]" type="text">
-                                <span class="hint">Maximum number of simulataneus pickups per interval.</span>
+                                <span class="hint" data-i18n-key="MAX_PATRON_HINT"></span>
                             </li>
 
                             <li>
-                                <label for="patron-scheduled-[% branchcode | html %]">Patron-scheduled pickup: </label>
+                                <label for="patron-scheduled-[% branchcode | html %]" data-i18n-key="PATRON_SCHED_LABEL"></label>
                                 [% IF policies.$branchcode.patron_scheduled_pickup %]
                                     <input name="patron-scheduled-[% branchcode | html %]" id="patron-scheduled-[% branchcode | html %]" value="1" type="checkbox" checked>
                                 [% ELSE %]
                                     <input name="patron-scheduled-[% branchcode | html %]" id="patron-scheduled-[% branchcode | html %]" value="1" type="checkbox">
                                 [% END %]
-                                <span class="hint">Enable patrons to schedule their own curbside pickups for <i>[% l.branchname | html %]</i>.</span>
+                                <span class="hint" data-i18n-key="PATRON_SCHED_HINT" data-i18n-format="[% l.branchname | html %]"></span>
                             </li>
                         </ol>
                     </fieldset>
 
                     <fieldset class="rows">
-                        <legend>Curbside pickup hours for <i>[% l.branchname %]</i></legend>
+                        <legend data-i18n-key="HOURS_LEGEND" data-i18n-format="[% l.branchname | html %]"></legend>
 
                         <ol>
                             <li>
                                 <label></label>
-                                Times should be in 24-hour format ( 00:00 to 23:59 ).
+                                <span data-i18n-key="TIMES_HINT"></span>
                             </li>
 
                             <li>
-                                <label>Sunday: </label>
+                                <label data-i18n-key="SUNDAY"></label>
 
                                 <input name="pickup-start-hour-sunday-[% branchcode | html %]" size="3" value="[% minutes_format(m=policies.$branchcode.sunday_start_hour) %]" type="text">
                                 :
                                 <input name="pickup-start-minute-sunday-[% branchcode | html %]" size="3" value="[% minutes_format(m=policies.$branchcode.sunday_start_minute) %]" type="text">
 
-                                to
+                                <span data-i18n-key="TO"></span>
 
                                 <input name="pickup-end-hour-sunday-[% branchcode | html %]" size="3" value="[% minutes_format(m=policies.$branchcode.sunday_end_hour) %]" type="text">
                                 :
@@ -91,13 +92,13 @@
                             </li>
 
                             <li>
-                                <label>Monday: </label>
+                                <label data-i18n-key="MONDAY"></label>
 
                                 <input name="pickup-start-hour-monday-[% branchcode | html %]" size="3" value="[% minutes_format(m=policies.$branchcode.monday_start_hour) %]" type="text">
                                 :
                                 <input name="pickup-start-minute-monday-[% branchcode | html %]" size="3" value="[% minutes_format(m=policies.$branchcode.monday_start_minute) %]" type="text">
 
-                                to
+                                <span data-i18n-key="TO"></span>
 
                                 <input name="pickup-end-hour-monday-[% branchcode | html %]" size="3" value="[% minutes_format(m=policies.$branchcode.monday_end_hour) %]" type="text">
                                 :
@@ -105,13 +106,13 @@
                             </li>
 
                             <li>
-                                <label>Tuesday: </label>
+                                <label data-i18n-key="TUESDAY"></label>
 
                                 <input name="pickup-start-hour-tuesday-[% branchcode | html %]" size="3" value="[% minutes_format(m=policies.$branchcode.tuesday_start_hour) %]" type="text">
                                 :
                                 <input name="pickup-start-minute-tuesday-[% branchcode | html %]" size="3" value="[% minutes_format(m=policies.$branchcode.tuesday_start_minute) %]" type="text">
 
-                                to
+                                <span data-i18n-key="TO"></span>
 
                                 <input name="pickup-end-hour-tuesday-[% branchcode | html %]" size="3" value="[% minutes_format(m=policies.$branchcode.tuesday_end_hour) %]" type="text">
                                 :
@@ -119,13 +120,13 @@
                             </li>
 
                             <li>
-                                <label>Wednesday: </label>
+                                <label data-i18n-key="WEDNESDAY"></label>
 
                                 <input name="pickup-start-hour-wednesday-[% branchcode | html %]" size="3" value="[% minutes_format(m=policies.$branchcode.wednesday_start_hour) %]" type="text">
                                 :
                                 <input name="pickup-start-minute-wednesday-[% branchcode | html %]" size="3" value="[% minutes_format(m=policies.$branchcode.wednesday_start_minute) %]" type="text">
 
-                                to
+                                <span data-i18n-key="TO"></span>
 
                                 <input name="pickup-end-hour-wednesday-[% branchcode | html %]" size="3" value="[% minutes_format(m=policies.$branchcode.wednesday_end_hour) %]" type="text">
                                 :
@@ -133,13 +134,13 @@
                             </li>
 
                             <li>
-                                <label>Thursday: </label>
+                                <label data-i18n-key="THURSDAY"></label>
 
                                 <input name="pickup-start-hour-thursday-[% branchcode | html %]" size="3" value="[% minutes_format(m=policies.$branchcode.thursday_start_hour) %]" type="text">
                                 :
                                 <input name="pickup-start-minute-thursday-[% branchcode | html %]" size="3" value="[% minutes_format(m=policies.$branchcode.thursday_start_minute) %]" type="text">
 
-                                to
+                                <span data-i18n-key="TO"></span>
 
                                 <input name="pickup-end-hour-thursday-[% branchcode | html %]" size="3" value="[% minutes_format(m=policies.$branchcode.thursday_end_hour) %]" type="text">
                                 :
@@ -147,13 +148,13 @@
                             </li>
 
                             <li>
-                                <label>Friday: </label>
+                                <label data-i18n-key="FRIDAY"></label>
 
                                 <input name="pickup-start-hour-friday-[% branchcode | html %]" size="3" value="[% minutes_format(m=policies.$branchcode.friday_start_hour) %]" type="text">
                                 :
                                 <input name="pickup-start-minute-friday-[% branchcode | html %]" size="3" value="[% minutes_format(m=policies.$branchcode.friday_start_minute) %]" type="text">
 
-                                to
+                                <span data-i18n-key="TO"></span>
 
                                 <input name="pickup-end-hour-friday-[% branchcode | html %]" size="3" value="[% minutes_format(m=policies.$branchcode.friday_end_hour) %]" type="text">
                                 :
@@ -161,13 +162,13 @@
                             </li>
 
                             <li>
-                                <label>Saturday: </label>
+                                <label data-i18n-key="SATURDAY"></label>
 
                                 <input name="pickup-start-hour-saturday-[% branchcode | html %]" size="3" value="[% minutes_format(m=policies.$branchcode.saturday_start_hour) %]" type="text">
                                 :
                                 <input name="pickup-start-minute-saturday-[% branchcode | html %]" size="3" value="[% minutes_format(m=policies.$branchcode.saturday_start_minute) %]" type="text">
 
-                                to
+                                <span data-i18n-key="TO"></span>
 
                                 <input name="pickup-end-hour-saturday-[% branchcode | html %]" size="3" value="[% minutes_format(m=policies.$branchcode.saturday_end_hour) %]" type="text">
                                 :
@@ -190,11 +191,34 @@
     </form>
 
 [% MACRO jsinclude BLOCK %]
-    <script type="text/javascript">
-         $(document).ready(function() {
-            $('#abouttabs').tabs();
-         });
-    </script>
+
+  <script type="text/javascript">
+
+    var tokens = {};
+    [% FOREACH t IN tokens %]
+        tokens['[% t.key | html %]'] = [% t.text | $raw %];
+    [% END %]
+
+    $(document).ready(function() {
+      var lang = $('html').attr('lang');
+      var part = lang.split('-')[0];
+      var i18n = Object.assign({}, tokens['en'], tokens[part]||{}, tokens[lang]||{});
+      $('*[data-i18n-key]:not([data-i18n-key=""]').each(function(){
+        var $t = $(this);
+        var data = $t.data();
+        if(!i18n.hasOwnProperty(data.i18nKey)) return;
+        var text = _(i18n[data.i18nKey]);
+        if(data.i18nFormat) {
+            !Array.isArray(data.i18nFormat) && (data.i18nFormat = [data.i18nFormat]);
+            text = text.format.apply(text, data.i18nFormat);
+        }
+        $t.html(text);
+      });
+      $('#abouttabs').tabs();
+    });
+
+  </script>
+
 [% END %]
 
 [% INCLUDE 'intranet-bottom.inc' %]

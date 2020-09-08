@@ -14,6 +14,7 @@ use C4::Context;
 use C4::Circulation;
 use Koha::DateUtils;
 use Koha::Libraries;
+use Encode qw(decode);
 
 use Module::Metadata;
 use Koha::Schema;
@@ -324,6 +325,19 @@ sub configure {
       Koha::Libraries->search( {}, { order_by => ['branchname'] } );
 
     unless ( $cgi->param('save') ) {
+
+        my $dir = $self->bundle_path.'/i18n';
+        opendir(my $dh, $dir) || die "Can't opendir $dir: $!";
+        my @files = grep { /^[^.]/ && -f "$dir/$_" } readdir($dh);
+        closedir $dh;
+
+        my @tokens;
+        foreach my $file (@files) {
+            my @splitted = split(/\./, $file, -1);
+            my $lang = $splitted[0];
+            push @tokens, {key => $lang, text => decode("UTF-8", $self->mbf_read('i18n/'.$file))};
+        }
+
         my $template = $self->get_template( { file => 'configure.tt' } );
 
         my %policies = map { $_->branchcode => $_ }
@@ -332,6 +346,7 @@ sub configure {
         $template->param(
             policies  => \%policies,
             libraries => $libraries,
+            tokens => \@tokens,
         );
 
         $self->output_html( $template->output() );
