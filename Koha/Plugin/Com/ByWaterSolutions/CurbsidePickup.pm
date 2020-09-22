@@ -272,7 +272,7 @@ sub _notify_new_pickup {
     );
 
     my $send_notification = sub {
-        my ( $mtt, $letter_code ) = (@_);
+        my ( $mtt, $letter_code, $patron ) = (@_);
         return unless defined $letter_code;
         $letter_params{letter_code}            = $letter_code;
         $letter_params{message_transport_type} = $mtt;
@@ -295,13 +295,19 @@ sub _notify_new_pickup {
     while ( my ( $mtt, $letter_code ) =
         each %{ $messagingprefs->{transports} } )
     {
+        warn "Curbside Pickup Plugin: borrowernumber " . $patron->id . "requested a notice by email but does not have an email to send to!"
+            if $mtt eq 'email' and not $to_address;
+
+        warn "Curbside Pickup Plugin: borrowernumber " . $patron->id . "requested a notice by SMS but does not have an SMS number to send to!"
+            if $mtt eq 'sms' and not $patron->smsalertnumber;
+
         next
           if (
             ( $mtt eq 'email' and not $to_address )    # No email address
             or ( $mtt eq 'sms' and not $patron->smsalertnumber ) # No SMS number
           );
 
-        $send_notification->( $mtt, 'CURBSIDE' );
+        $send_notification->( $mtt, 'CURBSIDE', $patron );
     }
 }
 
