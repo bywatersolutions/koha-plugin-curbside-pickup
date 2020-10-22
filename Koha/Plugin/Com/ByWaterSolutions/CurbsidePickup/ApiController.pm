@@ -21,6 +21,7 @@ use Mojo::Base 'Mojolicious::Controller';
 
 use Koha::Libraries;
 use Koha::DateUtils;
+use Koha::Plugin::Com::ByWaterSolutions::CurbsidePickup;
 
 =head1 API
 
@@ -143,6 +144,8 @@ sub create_pickup {
                 notes                     => $notes
             }
         )->store();
+
+        Koha::Plugin::Com::ByWaterSolutions::CurbsidePickup->_notify_new_pickup($pickup);
 
         return $c->render( status => 200, openapi => $pickup );
     }
