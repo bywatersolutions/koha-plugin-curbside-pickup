@@ -294,7 +294,7 @@ function generate_html() {
     $('#schedule-pickup-button').on('click', function() {
         $('#schedule-pickup-button').prop('disabled', true);
 
-        let patron_id = borrowernumber;
+        let patron_id = cp_borrowernumber;
         let library_id = $('#pickup-branch').val();
         let pickup_datetime = $('#pickup-time').val();
         let notes = $('#notes').val();
@@ -339,7 +339,7 @@ function generate_html() {
     $("li.active").removeClass("active");
     $("#my-pickups").parent().addClass("active");
 
-    $.getJSON(`/api/v1/contrib/curbsidepickup/patrons/${borrowernumber}/pickups`, function(data) {
+    $.getJSON(`/api/v1/contrib/curbsidepickup/patrons/${cp_borrowernumber}/pickups`, function(data) {
         my_pickups = data;
 
         for (let i = 0; i < data.length; i++) {
