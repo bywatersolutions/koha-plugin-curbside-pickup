@@ -272,7 +272,7 @@ function generate_html() {
         let existing_pickup = false;
         for (let i = 0; i < my_pickups.length; i++) {
             let p = my_pickups[i];
-            if (p.branchcode == branchcode) {
+            if (!p.delivered_by && p.branchcode == branchcode) {
                 existing_pickup = true;
             }
         }
@@ -346,6 +346,8 @@ function generate_html() {
             let pickup = data[i];
             let arrived_disabled = !pickup.staged_datetime || pickup.arrival_datetime ? "disabled" : "";
 
+            if ( pickup.delivered_datetime != null ) continue;
+
             let row = `
                         <tr>
                             <td>${pickup.branchname}</td>
@@ -353,9 +355,9 @@ function generate_html() {
                             <td>${moment(pickup.scheduled_pickup_datetime).format("LT")}</td>
                             <td>${pickup.notes}</td>
                             <td>
-                                <button class="btn arrival-alert ${arrived_disabled}" href="#" data-patron-id="${pickup.borrowernumber}" data-pickup-id="${pickup.id}" ${arrived_disabled}>Alert staff of your arrival</button>
+                                <button class="btn arrival-alert ${arrived_disabled}" href="#" data-patron-id="${pickup.borrowernumber}" data-pickup-id="${pickup.id}" ${arrived_disabled}><i class="fa fa-bell" aria-hidden="true"></i> Alert staff of your arrival</button>
                                 <p/>
-                                <button class="btn cancel-pickup" href="#" data-patron-id="${pickup.borrowernumber}" data-pickup-id="${pickup.id}">Cancel this pickup</button>
+                                <button class="btn cancel-pickup" href="#" data-patron-id="${pickup.borrowernumber}" data-pickup-id="${pickup.id}"><i class="fa fa-ban" aria-hidden="true"></i> Cancel this pickup</button>
                                 </td>
                         </tr>
                     `;
@@ -384,6 +386,8 @@ function generate_html() {
         let button = $(this);
         let patron_id = $(this).data('patron-id');
         let pickup_id = $(this).data('pickup-id');
+
+	if ( $(this).hasClass('disabled') ) return;
 
         let confirmed = confirm("Are you sure you want to cancel this scheduled curbside pickup?");
         if (confirmed) {
