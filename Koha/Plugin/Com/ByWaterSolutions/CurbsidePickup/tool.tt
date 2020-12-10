@@ -42,7 +42,7 @@
                 <li><a id="to-be-staged-tab"      href="#to-be-staged">To be staged</a></li>
                 <li><a id="staged-and-ready-tab"  href="#staged-and-ready">Staged & ready</a></li>
                 <li><a id="patron-is-outside-tab" href="#patron-is-outside">Patron is outside</a></li>
-                <li><a id="delivered-today-tab"    href="#delivered-today">Delivered today</a></li>
+                <li><a id="delivered-today-tab"   href="#delivered-today">Delivered today</a></li>
                 <li><a id="schedule-pickup-tab"   href="#schedule-pickup">Schedule pickup</a></li>
             </ul>
 
