@@ -12,6 +12,8 @@
 [% INCLUDE 'header.inc' %]
 [% INCLUDE 'cat-search.inc' %]
 
+[% SET today_iso = date.format(date.now, format = '%Y-%m-%d') %]
+
 <div id="breadcrumbs"><a href="/cgi-bin/koha/mainpage.pl">Home</a> &rsaquo; <a href="/cgi-bin/koha/plugins/plugins-home.pl">Plugins</a> &rsaquo; Curbside pickup &rsaquo; Dashboard</div>
 
 [% UNLESS policy.enabled %]
@@ -66,11 +68,17 @@
                     </thead>
                     <tbody>
                         [% FOREACH cp IN curbside_pickups %]
+                            [% IF date.format(cp.scheduled_pickup_datetime, format = '%Y-%m-%d') == today_iso %]
+                                [% SET class = "pickup-today" %]
+                            [% ELSE %]
+                                [% SET class = "pickup-later" %]
+                            [% END %]
+
                             [% UNLESS cp.staged_datetime %]
-                                <tr>
+                                <tr class="[% class | html %]">
                                     <td>[% cp.scheduled_pickup_datetime | $KohaDates with_hours = 1 %]</td>
                                     <td>
-                                        <a href="/cgi-bin/koha/members/moremember.pl?borrowernumber=[% cp.borrowernumber %]">[% cp.patron.firstname | html %] [% cp.patron.surname | html %] ([% cp.patron.cardnumber | html %])</a>
+                                        <a href="/cgi-bin/koha/members/moremember.pl?borrowernumber=[% cp.borrowernumber | html %]">[% cp.patron.firstname | html %] [% cp.patron.surname | html %] ([% cp.patron.cardnumber | html %])</a>
                                         [% IF cp.notes %]
                                             <br/>
                                             Notes: [% cp.notes %]
@@ -133,8 +141,14 @@
                     </thead>
                     <tbody>
                         [% FOREACH cp IN curbside_pickups %]
+                            [% IF date.format(cp.scheduled_pickup_datetime, format = '%Y-%m-%d') == today_iso %]
+                                [% SET class = "pickup-today" %]
+                            [% ELSE %]
+                                [% SET class = "pickup-later" %]
+                            [% END %]
+
                             [% IF cp.staged_datetime && !cp.arrival_datetime %]
-                                <tr>
+                                <tr class="[% class | html %]">
                                     <td>[% cp.scheduled_pickup_datetime | $KohaDates with_hours = 1 %]</td>
                                     <td>
                                         <a href="/cgi-bin/koha/members/moremember.pl?borrowernumber=[% cp.borrowernumber | html %]">[% cp.patron.firstname | html %] [% cp.patron.surname | html %] ([% cp.patron.cardnumber | html %])</a>
@@ -213,8 +227,14 @@
                     </thead>
                     <tbody>
                         [% FOREACH cp IN curbside_pickups %]
+                            [% IF date.format(cp.scheduled_pickup_datetime, format = '%Y-%m-%d') == today_iso %]
+                                [% SET class = "pickup-today" %]
+                            [% ELSE %]
+                                [% SET class = "pickup-later" %]
+                            [% END %]
+
                             [% IF cp.arrival_datetime && !cp.delivered_datetime %]
-                                <tr>
+                                <tr class="[% class | html %]">
                                     <td>[% cp.scheduled_pickup_datetime | $KohaDates with_hours = 1 %]</td>
                                     <td>
                                         <a href="/cgi-bin/koha/members/moremember.pl?borrowernumber=[% cp.borrowernumber | html %]">[% cp.patron.firstname | html %] [% cp.patron.surname | html %] ([% cp.patron.cardnumber | html %])</a>
@@ -291,8 +311,14 @@
                     </thead>
                     <tbody>
                         [% FOREACH cp IN curbside_pickups %]
+                            [% IF date.format(cp.scheduled_pickup_datetime, format = '%Y-%m-%d') == today_iso %]
+                                [% SET class = "pickup-today" %]
+                            [% ELSE %]
+                                [% SET class = "pickup-later" %]
+                            [% END %]
+
                             [% IF cp.delivered_datetime %]
-                                <tr>
+                                <tr class="[% class | html %]">
                                     <td>[% cp.delivered_datetime | $KohaDates with_hours = 1 %]</td>
                                     <td>
                                         <a href="/cgi-bin/koha/members/moremember.pl?borrowernumber=[% cp.borrowernumber | html %]">[% cp.patron.firstname | html %] [% cp.patron.surname | html %] ([% cp.patron.cardnumber | html %])</a>
@@ -303,7 +329,7 @@
                                     </td>
                                     <td>
                                         [% FOREACH c IN cp.patron.checkouts %]
-                                            [% IF date.format(c.issuedate, format = '%Y-%m-%d') == date.format(date.now, format = '%Y-%m-%d') %]
+                                            [% IF date.format(c.issuedate, format = '%Y-%m-%d') == today_iso %]
                                                 <a href="/cgi-bin/koha/catalogue/detail.pl?biblionumber=[% c.item.biblionumber | html %]">[% c.item.biblio.title | html %]</a> ([% c.item.biblio.author | html %], <a href="/cgi-bin/koha/catalogue/moredetail.pl?itemnumber=[% c.itemnumber | html %]&biblionumber=[% c.item.biblionumber | html %]#item[% c.itemnumber | html %]">[% c.item.barcode | html %]</a>)<br/>
                                             [% END %]
                                         [% END %]
