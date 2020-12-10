@@ -212,6 +212,7 @@ sub tool {
 
         $curbside_pickup->set(
             {
+                arrival_datetime   => $curbside_pickup->arrival_datetime || dt_from_string(),
                 delivered_datetime => dt_from_string(),
                 delivered_by       => C4::Context->userenv->{number},
             }
