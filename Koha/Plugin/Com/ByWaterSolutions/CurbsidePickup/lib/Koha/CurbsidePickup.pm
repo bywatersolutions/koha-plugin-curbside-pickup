@@ -25,6 +25,7 @@ use base qw(Koha::Object);
 
 use Koha::Patron;
 use Koha::Library;
+use Koha::CurbsidePickupIssues;
 
 =head1 NAME
 
@@ -33,6 +34,22 @@ Koha::CurbsidePickup - Koha Curbside Pickup Object class
 =head1 API
 
 =head2 Class methods
+
+=head3 checkouts
+
+Return the checkouts linked to this pickup
+
+=cut
+
+sub checkouts {
+    my ( $self ) = @_;
+
+    my @pi = Koha::CurbsidePickupIssues->search({ curbside_pickup_id => $self->id })->as_list;
+
+    my @checkouts = map { $_->checkout } @pi;
+
+    return @checkouts;
+}
 
 =head3 patron
 

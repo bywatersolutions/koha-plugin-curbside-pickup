@@ -6,27 +6,30 @@ use Mojo::JSON qw(decode_json to_json);
 
 use base qw(Koha::Plugins::Base);
 
-use File::Slurp qw(read_file);
 use Cwd qw(abs_path);
+use Encode qw(decode);
+use File::Slurp qw(read_file);
+use Module::Metadata;
 
 use C4::Auth;
-use C4::Context;
 use C4::Circulation;
+use C4::Context;
+use C4::Installer qw(TableExists);
 use Koha::DateUtils;
 use Koha::Libraries;
-use Encode qw(decode);
-
-use Module::Metadata;
 use Koha::Schema;
+
 BEGIN {
     my $path = Module::Metadata->find_module_by_name(__PACKAGE__);
     $path =~ s!\.pm$!/lib!;
     unshift @INC, $path;
 
-    require Koha::CurbsidePickups;
+    require Koha::CurbsidePickupIssues;
     require Koha::CurbsidePickupPolicies;
-    require Koha::Schema::Result::CurbsidePickupPolicy;
+    require Koha::CurbsidePickups;
     require Koha::Schema::Result::CurbsidePickup;
+    require Koha::Schema::Result::CurbsidePickupIssue;
+    require Koha::Schema::Result::CurbsidePickupPolicy;
 
     # register the additional schema classes
     Koha::Schema->register_class(CurbsidePickup => 'Koha::Schema::Result::CurbsidePickup');
@@ -195,7 +198,15 @@ sub tool {
 
                 unless ( keys %$issuingimpossible ) {
                     my $issue = AddIssue( $patron->unblessed, $hold->item->barcode );
-                    push( @not_checked_out, $hold ) unless $issue;
+                    if ( $issue ) {
+                        Koha::CurbsidePickupIssue->new({
+                            curbside_pickup_id => $id,
+                            issue_id           => $issue->id,
+                            reserve_id         => $hold->id,
+                        })->store();
+                    } else {
+                        push( @not_checked_out, $hold );
+                    }
                 }
             }
 
@@ -466,6 +477,28 @@ CREATE TABLE `curbside_pickups` (
 	});
 
     $dbh->do(q{
+CREATE TABLE `curbside_pickup_issues` (
+  `id` int(11) NOT NULL auto_increment,
+  `curbside_pickup_id` int(11) NOT NULL,
+  `issue_id` int(11) NOT NULL,
+  `reserve_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (curbside_pickup_id) REFERENCES curbside_pickups(id) ON DELETE CASCADE ON UPDATE CASCADE,
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+	});
+
+    $dbh->do(q{
+CREATE TABLE `curbside_pickup_issues` (
+  `id` int(11) NOT NULL auto_increment,
+  `curbside_pickup_id` int(11) NOT NULL,
+  `issue_id` int(11) NOT NULL,
+  `reserve_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (curbside_pickup_id) REFERENCES curbside_pickups(id) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    });
+
+    $dbh->do(q{
         INSERT INTO `letter` VALUES ('reserves','CURBSIDE','','Curbside pickup',0,'You have schedule a curbside pickup for <<branches.branchname>>','[%- USE KohaDates -%]\r\n[%- SET cp = curbside_pickup -%]\r\n\r\nYou have a curbside pickup scheduled for [% cp.scheduled_pickup_datetime | $KohaDates with_hours => 1 %] at [% cp.library.branchname %].\r\n\r\nAny holds waiting for you at the pickup time will be included in this pickup. At this time, that list includes:\r\n[%- FOREACH h IN cp.patron.holds %]\r\n    [%- IF h.branchcode == cp.branchcode && h.found == \'W\' %]\r\n* [% h.biblio.title %], [% h.biblio.author %] ([% h.item.barcode %])\r\n    [%- END %]\r\n[%- END %]\r\n\r\nOnce you have arrived, please call your library or log into your account and click the \"Alert staff of your arrival\" button to let them know you are there.','email','default');
     });
 
@@ -474,6 +507,21 @@ CREATE TABLE `curbside_pickups` (
 
 sub upgrade {
     my ( $self, $args ) = @_;
+
+    my $dbh = C4::Context->dbh;
+
+    unless ( TableExists('curbside_pickup_issues') ) {
+        $dbh->do(q{
+CREATE TABLE `curbside_pickup_issues` (
+  `id` int(11) NOT NULL auto_increment,
+  `curbside_pickup_id` int(11) NOT NULL,
+  `issue_id` int(11) NOT NULL,
+  `reserve_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (curbside_pickup_id) REFERENCES curbside_pickups(id) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    	});
+    }
 
     return 1;
 }

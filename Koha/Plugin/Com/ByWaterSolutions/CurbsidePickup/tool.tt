@@ -328,7 +328,7 @@
                                         [% END %]
                                     </td>
                                     <td>
-                                        [% FOREACH c IN cp.patron.checkouts %]
+                                        [% FOREACH c IN cp.checkouts %]
                                             [% IF date.format(c.issuedate, format = '%Y-%m-%d') == today_iso %]
                                                 <a href="/cgi-bin/koha/catalogue/detail.pl?biblionumber=[% c.item.biblionumber | html %]">[% c.item.biblio.title | html %]</a> ([% c.item.biblio.author | html %], <a href="/cgi-bin/koha/catalogue/moredetail.pl?itemnumber=[% c.itemnumber | html %]&biblionumber=[% c.item.biblionumber | html %]#item[% c.itemnumber | html %]">[% c.item.barcode | html %]</a>)<br/>
                                             [% END %]

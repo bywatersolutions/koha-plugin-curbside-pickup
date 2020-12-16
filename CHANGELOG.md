@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.24] - 2020-12-16
+## Changed
+- Added table curbside_pickups_issues to map a pickup to the issues & holds associated with a pickup
+
+## [1.0.23] - 2020-12-10
+## Changed
+- Fix bug in OPAC that prevents patron from scheduling a new pickup unless all previous pickups are canceled/deleted
+
 ## [1.0.22] - 2020-11-20
 ## Changed
 - Fix bug in OPAC that prevents patron from scheduling a new pickup unless all previous pickups are canceled/deleted
