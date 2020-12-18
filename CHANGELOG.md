@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.25] - 2020-12-18
+## Changed
+- Fixed bug related to new curbside_pickups_issues table where schema wasn't being loaded
+
 ## [1.0.24] - 2020-12-16
 ## Changed
 - Added table curbside_pickups_issues to map a pickup to the issues & holds associated with a pickup

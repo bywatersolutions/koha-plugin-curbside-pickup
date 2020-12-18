@@ -34,6 +34,7 @@ BEGIN {
     # register the additional schema classes
     Koha::Schema->register_class(CurbsidePickup => 'Koha::Schema::Result::CurbsidePickup');
     Koha::Schema->register_class(CurbsidePickupPolicy => 'Koha::Schema::Result::CurbsidePickupPolicy');
+    Koha::Schema->register_class(CurbsidePickupIssue => 'Koha::Schema::Result::CurbsidePickupIssue');
     # ... and force a refresh of the database handle so that it includes
     # the new classes
     Koha::Database->schema({ new => 1 });
