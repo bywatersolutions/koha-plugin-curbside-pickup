@@ -98,7 +98,7 @@
                                             <input type="hidden" name="action" value="mark-as-staged"/>
                                             <input type="hidden" name="id" value="[% cp.id %]"/>
                                             <p>
-                                                <button type="submit" class="btn btn-default"><i class="fa fa-check" aria-hidden="true"></i> Mark as <i>staged & ready</i></button>
+                                                <button type="submit" class="btn btn-default mark-as-staged-and-ready-btn"><i class="fa fa-check" aria-hidden="true"></i> Mark as <i>staged & ready</i></button>
                                             </p>
                                         </form>
 
@@ -108,7 +108,7 @@
                                             <input type="hidden" name="action" value="cancel"/>
                                             <input type="hidden" name="id" value="[% cp.id %]"/>
                                             <p>
-                                                <button type="submit" class="btn btn-default"><i class="fa fa-ban" aria-hidden="true"></i> Cancel</button>
+                                                <button type="submit" class="btn btn-default cancel-btn"><i class="fa fa-ban" aria-hidden="true"></i> Cancel</button>
                                             </p>
                                         </form>
                                     </td>
@@ -174,7 +174,7 @@
                                             <input type="hidden" name="action" value="mark-patron-has-arrived"/>
                                             <input type="hidden" name="id" value="[% cp.id %]"/>
                                             <p>
-                                                <button type="submit" class="btn btn-default"><i class="fa fa-map-marker" aria-hidden="true"></i> Patron has arrived</button>
+                                                <button type="submit" class="btn btn-default patron-has-arrived-btn"><i class="fa fa-map-marker" aria-hidden="true"></i> Patron has arrived</button>
                                             </p>
                                         </form>
 
@@ -184,7 +184,7 @@
                                             <input type="hidden" name="action" value="mark-as-delivered"/>
                                             <input type="hidden" name="id" value="[% cp.id %]"/>
                                             <p>
-                                                <button type="submit" class="btn btn-default"><i class="fa fa-envelope" aria-hidden="true"></i> Mark as <i>delivered</i></button>
+                                                <button type="submit" class="btn btn-default mark-as-delivered-btn"><i class="fa fa-envelope" aria-hidden="true"></i> Mark as <i>delivered</i></button>
                                             </p>
                                         </form>
 
@@ -194,7 +194,7 @@
                                             <input type="hidden" name="action" value="mark-as-unstaged"/>
                                             <input type="hidden" name="id" value="[% cp.id %]"/>
                                             <p>
-                                                <button type="submit" class="btn btn-default"><i class="fa fa-undo" aria-hidden="true"></i> Mark as <i>to be staged</i></button>
+                                                <button type="submit" class="btn btn-default mark-as-to-be-staged-btn"><i class="fa fa-undo" aria-hidden="true"></i> Mark as <i>to be staged</i></button>
                                             </p>
                                         </form>
                                     </td>
@@ -260,7 +260,7 @@
                                             <input type="hidden" name="action" value="mark-as-delivered"/>
                                             <input type="hidden" name="id" value="[% cp.id %]"/>
                                             <p>
-                                                <button type="submit" class="btn btn-default"><i class="fa fa-envelope" aria-hidden="true"></i> Mark as delivered</button>
+                                                <button type="submit" class="btn btn-default mark-as-delivered-btn"><i class="fa fa-envelope" aria-hidden="true"></i> Mark as delivered</button>
                                             </p>
                                         </form>
 
@@ -270,7 +270,7 @@
                                             <input type="hidden" name="action" value="mark-as-staged"/>
                                             <input type="hidden" name="id" value="[% cp.id %]"/>
                                             <p>
-                                                <button type="submit" class="btn btn-default"><i class="fa fa-undo" aria-hidden="true"></i> Mark as <i>staged & ready</i></button>
+                                                <button type="submit" class="btn btn-default mark-as-staged-and-ready-btn"><i class="fa fa-undo" aria-hidden="true"></i> Mark as <i>staged & ready</i></button>
                                             </p>
                                         </form>
 
@@ -280,7 +280,7 @@
                                             <input type="hidden" name="action" value="mark-as-unstaged"/>
                                             <input type="hidden" name="id" value="[% cp.id %]"/>
                                             <p>
-                                                <button type="submit" class="btn btn-default"><i class="fa fa-undo" aria-hidden="true"></i> Mark as <i>to be staged</i></button>
+                                                <button type="submit" class="btn btn-default mark-as-to-be-staged-btn"><i class="fa fa-undo" aria-hidden="true"></i> Mark as <i>to be staged</i></button>
                                             </p>
                                         </form>
                                     </td>
