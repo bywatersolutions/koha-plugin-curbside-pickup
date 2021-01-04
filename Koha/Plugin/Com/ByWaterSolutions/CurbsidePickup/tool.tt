@@ -96,6 +96,7 @@
                                             <input type="hidden" name="class" value="[% CLASS %]"/>
                                             <input type="hidden" name="method" value="[% METHOD %]"/>
                                             <input type="hidden" name="action" value="mark-as-staged"/>
+                                            <input type="hidden" name="tab" value="to-be-staged"/>
                                             <input type="hidden" name="id" value="[% cp.id %]"/>
                                             <p>
                                                 <button type="submit" class="btn btn-default mark-as-staged-and-ready-btn"><i class="fa fa-check" aria-hidden="true"></i> Mark as <i>staged & ready</i></button>
@@ -106,6 +107,7 @@
                                             <input type="hidden" name="class" value="[% CLASS %]"/>
                                             <input type="hidden" name="method" value="[% METHOD %]"/>
                                             <input type="hidden" name="action" value="cancel"/>
+                                            <input type="hidden" name="tab" value="to-be-staged"/>
                                             <input type="hidden" name="id" value="[% cp.id %]"/>
                                             <p>
                                                 <button type="submit" class="btn btn-default cancel-btn"><i class="fa fa-ban" aria-hidden="true"></i> Cancel</button>
@@ -172,6 +174,7 @@
                                             <input type="hidden" name="class" value="[% CLASS %]"/>
                                             <input type="hidden" name="method" value="[% METHOD %]"/>
                                             <input type="hidden" name="action" value="mark-patron-has-arrived"/>
+                                            <input type="hidden" name="tab" value="staged-and-ready"/>
                                             <input type="hidden" name="id" value="[% cp.id %]"/>
                                             <p>
                                                 <button type="submit" class="btn btn-default patron-has-arrived-btn"><i class="fa fa-map-marker" aria-hidden="true"></i> Patron has arrived</button>
@@ -182,6 +185,7 @@
                                             <input type="hidden" name="class" value="[% CLASS %]"/>
                                             <input type="hidden" name="method" value="[% METHOD %]"/>
                                             <input type="hidden" name="action" value="mark-as-delivered"/>
+                                            <input type="hidden" name="tab" value="staged-and-ready"/>
                                             <input type="hidden" name="id" value="[% cp.id %]"/>
                                             <p>
                                                 <button type="submit" class="btn btn-default mark-as-delivered-btn"><i class="fa fa-envelope" aria-hidden="true"></i> Mark as <i>delivered</i></button>
@@ -192,6 +196,7 @@
                                             <input type="hidden" name="class" value="[% CLASS %]"/>
                                             <input type="hidden" name="method" value="[% METHOD %]"/>
                                             <input type="hidden" name="action" value="mark-as-unstaged"/>
+                                            <input type="hidden" name="tab" value="staged-and-ready"/>
                                             <input type="hidden" name="id" value="[% cp.id %]"/>
                                             <p>
                                                 <button type="submit" class="btn btn-default mark-as-to-be-staged-btn"><i class="fa fa-undo" aria-hidden="true"></i> Mark as <i>to be staged</i></button>
@@ -258,6 +263,7 @@
                                             <input type="hidden" name="class" value="[% CLASS %]"/>
                                             <input type="hidden" name="method" value="[% METHOD %]"/>
                                             <input type="hidden" name="action" value="mark-as-delivered"/>
+                                            <input type="hidden" name="tab" value="patron-is-outside"/>
                                             <input type="hidden" name="id" value="[% cp.id %]"/>
                                             <p>
                                                 <button type="submit" class="btn btn-default mark-as-delivered-btn"><i class="fa fa-envelope" aria-hidden="true"></i> Mark as delivered</button>
@@ -268,6 +274,7 @@
                                             <input type="hidden" name="class" value="[% CLASS %]"/>
                                             <input type="hidden" name="method" value="[% METHOD %]"/>
                                             <input type="hidden" name="action" value="mark-as-staged"/>
+                                            <input type="hidden" name="tab" value="patron-is-outside"/>
                                             <input type="hidden" name="id" value="[% cp.id %]"/>
                                             <p>
                                                 <button type="submit" class="btn btn-default mark-as-staged-and-ready-btn"><i class="fa fa-undo" aria-hidden="true"></i> Mark as <i>staged & ready</i></button>
@@ -278,6 +285,7 @@
                                             <input type="hidden" name="class" value="[% CLASS %]"/>
                                             <input type="hidden" name="method" value="[% METHOD %]"/>
                                             <input type="hidden" name="action" value="mark-as-unstaged"/>
+                                            <input type="hidden" name="tab" value="patron-is-outside"/>
                                             <input type="hidden" name="id" value="[% cp.id %]"/>
                                             <p>
                                                 <button type="submit" class="btn btn-default mark-as-to-be-staged-btn"><i class="fa fa-undo" aria-hidden="true"></i> Mark as <i>to be staged</i></button>
