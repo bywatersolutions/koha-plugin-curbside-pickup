@@ -47,6 +47,7 @@ sub checkouts {
     my @pi = Koha::CurbsidePickupIssues->search({ curbside_pickup_id => $self->id })->as_list;
 
     my @checkouts = map { $_->checkout } @pi;
+    @checkouts = grep { defined $_ } @checkouts;
 
     return @checkouts;
 }
