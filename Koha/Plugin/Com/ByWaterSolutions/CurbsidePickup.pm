@@ -314,10 +314,14 @@ sub _notify_new_pickup {
         warn "Curbside Pickup Plugin: borrowernumber " . $patron->id . "requested a notice by SMS but does not have an SMS number to send to!"
             if $mtt eq 'sms' and not $patron->smsalertnumber;
 
+        warn "Curbside Pickup Plugin: borrowernumber " . $patron->id . "requested a notice by phone but does not have an phone number to send to!"
+            if $mtt eq 'phone' and not $patron->phone;
+
         next
           if (
             ( $mtt eq 'email' and not $to_address )    # No email address
             or ( $mtt eq 'sms' and not $patron->smsalertnumber ) # No SMS number
+            or ( $mtt eq 'phone' and not $patron->phone )    # No phone number
           );
 
         $send_notification->( $mtt, 'CURBSIDE', $patron );
