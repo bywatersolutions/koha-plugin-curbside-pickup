@@ -493,17 +493,6 @@ CREATE TABLE `curbside_pickup_issues` (
 	});
 
     $dbh->do(q{
-CREATE TABLE `curbside_pickup_issues` (
-  `id` int(11) NOT NULL auto_increment,
-  `curbside_pickup_id` int(11) NOT NULL,
-  `issue_id` int(11) NOT NULL,
-  `reserve_id` int(11) NOT NULL,
-  PRIMARY KEY (`id`),
-  FOREIGN KEY (curbside_pickup_id) REFERENCES curbside_pickups(id) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-    });
-
-    $dbh->do(q{
 INSERT IGNORE INTO `letter` (module, code, branchcode, name, is_html, title, content, message_transport_type, lang )
 VALUES ('reserves','CURBSIDE','','Curbside pickup',0,'You have schedule a curbside pickup for <<branches.branchname>>','[%- USE KohaDates -%]\r\n[%- SET cp = curbside_pickup -%]\r\n\r\nYou have a curbside pickup scheduled for [% cp.scheduled_pickup_datetime | $KohaDates with_hours => 1 %] at [% cp.library.branchname %].\r\n\r\nAny holds waiting for you at the pickup time will be included in this pickup. At this time, that list includes:\r\n[%- FOREACH h IN cp.patron.holds %]\r\n    [%- IF h.branchcode == cp.branchcode && h.found == \'W\' %]\r\n* [% h.biblio.title %], [% h.biblio.author %] ([% h.item.barcode %])\r\n    [%- END %]\r\n[%- END %]\r\n\r\nOnce you have arrived, please call your library or log into your account and click the \"Alert staff of your arrival\" button to let them know you are there.','email','default');
     });
