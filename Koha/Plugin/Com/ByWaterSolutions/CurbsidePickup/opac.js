@@ -111,8 +111,6 @@ $(document).ready(function() {
     // Adds the curbside pickups tab and the "your pickups" and "schedule a pickup" tab.
     $("#my-pickups").on("click", function() {
         show_wait_modal();
-        get_api_data();
-        hide_wait_modal();
     });
 
 });
@@ -160,6 +158,7 @@ function get_api_data() {
         get_pickups()
     ).done(function() {
         update_data();
+        hide_wait_modal();
     });
 }
 
@@ -424,7 +423,9 @@ function show_wait_modal() {
           </div>
         </div>`;
 
-    $("body").append(modal);
+    $("body").append(modal).on('shown.bs.modal',function(){
+        get_api_data();
+    });
     $("#curbside-wait-modal").modal();
 }
 
