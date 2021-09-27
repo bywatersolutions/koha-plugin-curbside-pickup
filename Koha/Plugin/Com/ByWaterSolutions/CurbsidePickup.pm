@@ -488,7 +488,7 @@ CREATE TABLE `curbside_pickup_issues` (
   `issue_id` int(11) NOT NULL,
   `reserve_id` int(11) NOT NULL,
   PRIMARY KEY (`id`),
-  FOREIGN KEY (curbside_pickup_id) REFERENCES curbside_pickups(id) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY (curbside_pickup_id) REFERENCES curbside_pickups(id) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 	});
 
