@@ -233,8 +233,8 @@ function generate_html() {
                                     </li>
                                     <li>
                                         <label for="pickup_date">Pickup date:</label>
-                                        <input name="pickup_date" type="text" class="form-control" id="datepicker" disabled required="required"/>
-                                        <span class="required">Required</span>
+                                        <input name="pickup_date" type="text" class="form-control" id="datepicker" disabled required="required" style="width:unset;display:inline;" />
+                                        <span class="text-danger">Required</span>
                                         <select name="pickup_time" id="pickup-time" required="required"></select>
                                     </li>
 
@@ -425,6 +425,7 @@ function show_wait_modal() {
 
     $("body").append(modal).on('shown.bs.modal',function(){
         get_api_data();
+        $(this).off('shown.bs.modal');
     });
     $("#curbside-wait-modal").modal();
 }
