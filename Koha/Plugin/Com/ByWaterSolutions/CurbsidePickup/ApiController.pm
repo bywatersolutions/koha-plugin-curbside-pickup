@@ -20,7 +20,7 @@ use Modern::Perl;
 use Mojo::Base 'Mojolicious::Controller';
 
 use Koha::Libraries;
-use Koha::DateUtils;
+use Koha::DateUtils qw(dt_from_string);
 use Koha::Plugin::Com::ByWaterSolutions::CurbsidePickup;
 
 =head1 API

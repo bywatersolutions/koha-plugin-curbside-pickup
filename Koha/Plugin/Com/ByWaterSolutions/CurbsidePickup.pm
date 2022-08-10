@@ -12,10 +12,10 @@ use File::Slurp qw(read_file);
 use Module::Metadata;
 
 use C4::Auth;
-use C4::Circulation;
+use C4::Circulation qw(CanBookBeIssued AddIssue);
 use C4::Context;
 use C4::Installer qw(TableExists);
-use Koha::DateUtils;
+use Koha::DateUtils qw(dt_from_string);
 use Koha::Libraries;
 use Koha::Schema;
 
