@@ -18,27 +18,9 @@ use C4::Installer qw(TableExists);
 use Koha::DateUtils qw(dt_from_string);
 use Koha::Libraries;
 use Koha::Schema;
-
-BEGIN {
-    my $path = Module::Metadata->find_module_by_name(__PACKAGE__);
-    $path =~ s!\.pm$!/lib!;
-    unshift @INC, $path;
-
-    require Koha::CurbsidePickupIssues;
-    require Koha::CurbsidePickupPolicies;
-    require Koha::CurbsidePickups;
-    require Koha::Schema::Result::CurbsidePickup;
-    require Koha::Schema::Result::CurbsidePickupIssue;
-    require Koha::Schema::Result::CurbsidePickupPolicy;
-
-    # register the additional schema classes
-    Koha::Schema->register_class(CurbsidePickup => 'Koha::Schema::Result::CurbsidePickup');
-    Koha::Schema->register_class(CurbsidePickupPolicy => 'Koha::Schema::Result::CurbsidePickupPolicy');
-    Koha::Schema->register_class(CurbsidePickupIssue => 'Koha::Schema::Result::CurbsidePickupIssue');
-    # ... and force a refresh of the database handle so that it includes
-    # the new classes
-    Koha::Database->schema({ new => 1 });
-}
+use Koha::CurbsidePickupIssues;
+use Koha::CurbsidePickupPolicies;
+use Koha::CurbsidePickups;
 
 our $VERSION         = "{VERSION}";
 our $MINIMUM_VERSION = "{MINIMUM_VERSION}";

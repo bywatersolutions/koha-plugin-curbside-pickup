@@ -21,7 +21,8 @@ use Mojo::Base 'Mojolicious::Controller';
 
 use Koha::Libraries;
 use Koha::DateUtils qw(dt_from_string);
-use Koha::Plugin::Com::ByWaterSolutions::CurbsidePickup;
+use Koha::CurbsidePickups;
+use Koha::CurbsidePickupPolicies;
 
 =head1 API
 
@@ -34,8 +35,6 @@ Returns existing future pickups for the given patron
 =cut
 
 sub pickups {
-    require Koha::CurbsidePickups;
-    require Koha::CurbsidePickupPolicies;
 
     my $c = shift->openapi->valid_input or return;
 
@@ -145,7 +144,7 @@ sub create_pickup {
             }
         )->store();
 
-        Koha::Plugin::Com::ByWaterSolutions::CurbsidePickup->_notify_new_pickup($pickup);
+        $pickup->notify_new_pickup();
 
         return $c->render( status => 200, openapi => $pickup );
     }
@@ -206,9 +205,6 @@ Returns all existing scheduled curbside pickups
 =cut
 
 sub all_pickups {
-    require Koha::CurbsidePickups;
-    require Koha::CurbsidePickupPolicies;
-
     my $c = shift->openapi->valid_input or return;
 
     my $curbside_pickups = Koha::CurbsidePickups->search(
@@ -242,9 +238,6 @@ Returns all library pickup policies
 =cut
 
 sub all_policies {
-    require Koha::CurbsidePickups;
-    require Koha::CurbsidePickupPolicies;
-
     my $c = shift->openapi->valid_input or return;
 
     my $policies = Koha::CurbsidePickupPolicies->search();
@@ -252,7 +245,6 @@ sub all_policies {
     my @data;
     foreach my $p ( $policies->as_list ) {
         my $data = $p->unblessed;
-        ##TODO Policy branchcode should be an FK constraint, add method 'library' to object
         $data->{branchname} = $p->library->branchname;
         push( @data, $data );
     }
@@ -267,9 +259,6 @@ Indicates the patron has arrived for the given curbside pickup appointment
 =cut
 
 sub mark_arrived {
-    require Koha::CurbsidePickups;
-    require Koha::CurbsidePickupPolicies;
-
     my $c = shift->openapi->valid_input or return;
 
     my $patron_id          = $c->validation->param('patron_id');
