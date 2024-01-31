@@ -113,7 +113,7 @@ sub create_pickup {
 
     my $body            = $c->validation->param('body');
     my $library_id      = $body->{library_id};
-    my $pickup_datetime = $body->{pickup_datetime};
+    my $pickup_datetime = dt_from_string( $body->{pickup_datetime} );
     my $notes           = $body->{notes};
 
     my $existing_curbside_pickups = Koha::CurbsidePickups->search(
