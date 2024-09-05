@@ -100,12 +100,12 @@ jobs:
         pwd
         ls -alh
         echo "KTD: Waiting for KTD to warm up"
-        for i in $(seq 1 100); do
+        for i in $(seq 1 200); do
             if docker exec koha-koha-1 bash -c '[ -e /ktd_ready ]'; then
                 printf "\n"
                 break
-            elif [ "$i" != "100" ]; then
-                printf "\rAttempt $i of 100"
+            elif [ "$i" != "200" ]; then
+                printf "\rAttempt $i of 200"
                 sleep 1
             else
                 printf "KTD: Timeout waiting for KTD to be ready (ERROR)"
