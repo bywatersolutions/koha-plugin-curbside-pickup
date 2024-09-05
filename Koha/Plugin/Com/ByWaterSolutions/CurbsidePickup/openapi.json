@@ -10,6 +10,20 @@
       "responses": {
         "200": {
           "description": "A list of curbside pickups"
+        },
+        "400": {
+          "description": "Bad request"
+        },
+        "500": {
+          "description": "Internal server error"
+        },
+        "503": {
+          "description": "Under maintenance"
+        }
+      },
+      "x-koha-authorization": {
+        "permissions": {
+          "circulate": "manage_curbside_pickups"
         }
       }
     }
@@ -25,6 +39,20 @@
       "responses": {
         "200": {
           "description": "A list of curbside pickup policies for all libraries"
+        },
+        "400": {
+          "description": "Bad request"
+        },
+        "500": {
+          "description": "Internal server error"
+        },
+        "503": {
+          "description": "Under maintenance"
+        }
+      },
+      "x-koha-authorization": {
+        "permissions": {
+          "circulate": "manage_curbside_pickups"
         }
       }
     }
@@ -48,33 +76,26 @@
         "200": {
           "description": "A list of curbside pickups for this patron"
         },
+        "400": {
+          "description": "Bad request"
+        },
         "403": {
-          "description": "Forbidden",
-          "schema": {
-              "type": "object",
-                "properties": {
-                  "error": {
-                    "description": "An explanation for the error",
-                    "type": "string"
-                  }
-                }
-          }
+          "description": "Access forbidden"
         },
         "404": {
-          "description": "An error occured",
-          "schema": {
-              "type": "object",
-                "properties": {
-                  "error": {
-                    "description": "An explanation for the error",
-                    "type": "string"
-                  }
-                }
-          }
+          "description": "Resource not found"
+        },
+        "500": {
+          "description": "Internal server error"
+        },
+        "503": {
+          "description": "Under maintenance"
         }
       },
       "x-koha-authorization": {
-        "allow-owner": true
+        "permissions": {
+          "circulate": "manage_curbside_pickups"
+        }
       }
     }
   },
@@ -123,37 +144,30 @@
         "200": {
           "description": "A list of curbside pickups for this patron"
         },
+        "400": {
+          "description": "Bad request"
+        },
         "403": {
-          "description": "Forbidden",
-          "schema": {
-              "type": "object",
-                "properties": {
-                  "error": {
-                    "description": "An explanation for the error",
-                    "type": "string"
-                  }
-                }
-          }
+          "description": "Access forbidden"
         },
         "404": {
-          "description": "An error occured",
-          "schema": {
-              "type": "object",
-                "properties": {
-                  "error": {
-                    "description": "An explanation for the error",
-                    "type": "string"
-                  }
-                }
-          }
+          "description": "Resource not found"
+        },
+        "500": {
+          "description": "Internal server error"
+        },
+        "503": {
+          "description": "Under maintenance"
         }
       },
       "x-koha-authorization": {
-        "allow-owner": true
+        "permissions": {
+          "circulate": "manage_curbside_pickups"
+        }
       }
     }
   },
-  "/patrons/{patron_id}/pickup/{pickup_id}": {
+  "/patrons/{patron_id}/pickup/{curbside_pickup_id}": {
     "delete": {
       "x-mojo-to": "Com::ByWaterSolutions::CurbsidePickup::ApiController#delete_pickup",
       "operationId": "CsDeletePickup",
@@ -167,7 +181,7 @@
           "type": "integer"
         },
         {
-          "name": "pickup_id",
+          "name": "curbside_pickup_id",
           "in": "path",
           "description": "Internal curbside pickup identifier",
           "required": true,
@@ -178,36 +192,29 @@
         "application/json"
       ],
       "responses": {
-        "200": {
+        "204": {
           "description": "Pickup has been successfully canceled"
         },
         "403": {
-          "description": "Forbidden",
-          "schema": {
-              "type": "object",
-                "properties": {
-                  "error": {
-                    "description": "An explanation for the error",
-                    "type": "string"
-                  }
-                }
-          }
+          "description": "Access forbidden"
         },
         "404": {
-          "description": "An error occured",
-          "schema": {
-              "type": "object",
-                "properties": {
-                  "error": {
-                    "description": "An explanation for the error",
-                    "type": "string"
-                  }
-                }
-          }
+          "description": "Resource not found"
+        },
+        "400": {
+          "description": "Bad request"
+        },
+        "500": {
+          "description": "Internal server error"
+        },
+        "503": {
+          "description": "Under maintenance"
         }
       },
       "x-koha-authorization": {
-        "allow-owner": true
+        "permissions": {
+          "circulate": "manage_curbside_pickups"
+        }
       }
     }
   },
@@ -239,33 +246,26 @@
         "200": {
           "description": "A curbside pickup"
         },
+        "400": {
+          "description": "Bad request"
+        },
         "403": {
-          "description": "Forbidden",
-          "schema": {
-              "type": "object",
-                "properties": {
-                  "error": {
-                    "description": "An explanation for the error",
-                    "type": "string"
-                  }
-                }
-          }
+          "description": "Access forbidden"
         },
         "404": {
-          "description": "An error occured",
-          "schema": {
-              "type": "object",
-                "properties": {
-                  "error": {
-                    "description": "An explanation for the error",
-                    "type": "string"
-                  }
-                }
-          }
+          "description": "Resource not found"
+        },
+        "500": {
+          "description": "Internal server error"
+        },
+        "503": {
+          "description": "Under maintenance"
         }
       },
       "x-koha-authorization": {
-        "allow-owner": true
+        "permissions": {
+          "circulate": "manage_curbside_pickups"
+        }
       }
     }
   }

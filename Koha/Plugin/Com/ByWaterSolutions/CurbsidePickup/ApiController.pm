@@ -19,10 +19,12 @@ use Modern::Perl;
 
 use Mojo::Base 'Mojolicious::Controller';
 
-use Koha::Libraries;
-use Koha::DateUtils qw(dt_from_string);
-use Koha::CurbsidePickups;
 use Koha::CurbsidePickupPolicies;
+use Koha::CurbsidePickups;
+use Koha::DateUtils qw(dt_from_string);
+use Koha::Libraries;
+
+use Try::Tiny qw(catch try);
 
 =head1 API
 
@@ -35,37 +37,19 @@ Returns existing future pickups for the given patron
 =cut
 
 sub pickups {
-
     my $c = shift->openapi->valid_input or return;
 
-    my $patron_id = $c->validation->param('patron_id');
-    my $patron    = Koha::Patrons->find($patron_id);
+    my $patron_id = $c->param('patron_id');
 
-    my $user = $c->stash('koha.user');
-    unless ( $user->borrowernumber == $patron_id ) {
-        return $c->render(
-            status  => 403,
-            openapi => {
-                error => "Viewing other patron's pickups is forbidden"
-            }
-        );
-    }
+    my $patron = Koha::Patrons->find($patron_id);
+    return $c->render_resource_not_found('Patron')
+        unless $patron;
 
-    unless ($patron) {
-        return $c->render(
-            status  => 404,
-            openapi => { error => "Patron not found." }
-        );
-    }
-
-    my $curbside_pickups = Koha::CurbsidePickups->search(
+    my $curbside_pickups = $patron->curbside_pickups->search(
         {
-            borrowernumber            => $patron_id,
             scheduled_pickup_datetime => { '>' => \'DATE(NOW())' },
         },
-        {
-            order_by => { -asc => 'scheduled_pickup_datetime' }
-        }
+        { order_by => { -asc => 'scheduled_pickup_datetime' } }
     );
 
     my @data;
@@ -86,68 +70,51 @@ Creates and returns a new pickup for the given patron
 =cut
 
 sub create_pickup {
-    require Koha::CurbsidePickups;
-    require Koha::CurbsidePickupPolicies;
-
     my $c = shift->openapi->valid_input or return;
 
-    my $patron_id = $c->validation->param('patron_id');
-    my $patron    = Koha::Patrons->find($patron_id);
+    my $patron_id = $c->param('patron_id');
 
-    my $user = $c->stash('koha.user');
-    unless ( $user->borrowernumber == $patron_id ) {
-        return $c->render(
-            status  => 403,
-            openapi => {
-                error => "Creating pickups for other patrons is forbidden"
-            }
-        );
-    }
+    my $patron = Koha::Patrons->find($patron_id);
+    return $c->render_resource_not_found('Patron')
+        unless $patron;
 
-    unless ($patron) {
-        return $c->render(
-            status  => 404,
-            openapi => { error => "Patron not found." }
-        );
-    }
+    return try {
+        my $body       = $c->req->json;
+        my $library_id = $body->{library_id};
+        my $notes      = $body->{notes};
 
-    my $body            = $c->validation->param('body');
-    my $library_id      = $body->{library_id};
-    my $pickup_datetime = dt_from_string( $body->{pickup_datetime} );
-    my $notes           = $body->{notes};
-
-    my $existing_curbside_pickups = Koha::CurbsidePickups->search(
-        {
-            branchcode                => $library_id,
-            borrowernumber            => $patron_id,
-            delivered_datetime        => undef,
-            scheduled_pickup_datetime => { '>' => \'DATE(NOW())' },
-        }
-    )->count();
-
-    if ($existing_curbside_pickups) {
-        return $c->render(
-            status  => 403,
-            openapi => {
-                error =>
-                  "Patron already has a pickup scheduled for this library."
-            }
-        );
-    }
-    else {
-        my $pickup = Koha::CurbsidePickup->new(
+        my $existing_curbside_pickups = $patron->curbside_pickups->search(
             {
-                borrowernumber            => $patron_id,
                 branchcode                => $library_id,
-                scheduled_pickup_datetime => $pickup_datetime,
-                notes                     => $notes
+                delivered_datetime        => undef,
+                scheduled_pickup_datetime => { '>' => \'DATE(NOW())' },
             }
-        )->store();
+        )->count();
 
-        $pickup->notify_new_pickup();
+        if ($existing_curbside_pickups) {
+            return $c->render(
+                status  => 403,
+                openapi => { error => "Patron already has a pickup scheduled for this library." }
+            );
+        } else {
+            my $pickup_datetime = dt_from_string( $body->{pickup_datetime} );
 
-        return $c->render( status => 200, openapi => $pickup );
-    }
+            my $pickup = Koha::CurbsidePickup->new(
+                {
+                    borrowernumber            => $patron_id,
+                    branchcode                => $library_id,
+                    scheduled_pickup_datetime => $pickup_datetime,
+                    notes                     => $notes
+                }
+            )->store();
+
+            $pickup->notify_new_pickup();
+
+            return $c->render( status => 200, openapi => $c->object->to_api($pickup) );
+        }
+    } catch {
+        $c->unhandled_exception();
+    };
 }
 
 =head3 delete_pickup
@@ -157,45 +124,26 @@ Creates and returns a new pickup for the given patron
 =cut
 
 sub delete_pickup {
-    require Koha::CurbsidePickups;
-    require Koha::CurbsidePickupPolicies;
-
     my $c = shift->openapi->valid_input or return;
 
-    my $patron_id = $c->validation->param('patron_id');
-    my $patron    = Koha::Patrons->find($patron_id);
+    my $patron_id = $c->param('patron_id');
+    my $pickup_id = $c->param('curbside_pickup_id');
 
-    my $user = $c->stash('koha.user');
-    unless ( $user->borrowernumber == $patron_id ) {
-        return $c->render(
-            status  => 403,
-            openapi => {
-                error => "Canceling pickups for other patrons is forbidden"
-            }
-        );
-    }
+    return try {
+        my $patron = Koha::Patrons->find($patron_id);
+        return $c->render_resource_not_found('Patron')
+            unless $patron;
 
-    unless ($patron) {
-        return $c->render(
-            status  => 404,
-            openapi => { error => "Patron not found." }
-        );
-    }
+        my $pickup = $patron->curbside_pickups->find($pickup_id);
+        return $c->render_resource_not_found('Curbside pickup')
+            unless $pickup;
 
-    my $pickup_id = $c->validation->param('pickup_id');
+        $pickup->delete();
 
-    my $pickup = Koha::CurbsidePickups->find($pickup_id);
-
-    unless ($pickup) {
-        return $c->render(
-            status  => 404,
-            openapi => { error => "Pickup not found." }
-        );
-    }
-
-    $pickup->delete();
-
-    return $c->render( status => 200, openapi => $pickup );
+        return $c->render_resource_deleted();
+    } catch {
+        $c->unhandled_exception();
+    };
 }
 
 =head3 all_pickups
@@ -207,28 +155,30 @@ Returns all existing scheduled curbside pickups
 sub all_pickups {
     my $c = shift->openapi->valid_input or return;
 
-    my $curbside_pickups = Koha::CurbsidePickups->search(
-        {
-            scheduled_pickup_datetime => { '>' => \'DATE(NOW())' },
-        },
-        {
-            order_by => { -asc => 'scheduled_pickup_datetime' }
+    return try {
+        my $curbside_pickups = Koha::CurbsidePickups->search(
+            {
+                scheduled_pickup_datetime => { '>' => \'DATE(NOW())' },
+            },
+            { order_by => { -asc => 'scheduled_pickup_datetime' } }
+        );
+
+        my @data;
+        foreach my $cp ( $curbside_pickups->as_list ) {
+            my $data = $cp->unblessed;
+
+            delete $data->{borrowernumber};
+            delete $data->{delivered_by};
+            delete $data->{staged_by};
+            delete $data->{notes};
+
+            push( @data, $data );
         }
-    );
 
-    my @data;
-    foreach my $cp ( $curbside_pickups->as_list ) {
-        my $data = $cp->unblessed;
-
-        delete $data->{borrowernumber};
-        delete $data->{delivered_by};
-        delete $data->{staged_by};
-        delete $data->{notes};
-
-        push( @data, $data );
-    }
-
-    return $c->render( status => 200, openapi => \@data );
+        return $c->render( status => 200, openapi => \@data );
+    } catch {
+        $c->unhandled_exception();
+    };
 }
 
 =head3 all_policies
@@ -240,16 +190,20 @@ Returns all library pickup policies
 sub all_policies {
     my $c = shift->openapi->valid_input or return;
 
-    my $policies = Koha::CurbsidePickupPolicies->search();
+    return try {
+        my $policies = Koha::CurbsidePickupPolicies->search();
 
-    my @data;
-    foreach my $p ( $policies->as_list ) {
-        my $data = $p->unblessed;
-        $data->{branchname} = $p->library->branchname;
-        push( @data, $data );
-    }
+        my @data;
+        foreach my $p ( $policies->as_list ) {
+            my $data = $p->unblessed;
+            $data->{branchname} = $p->library->branchname;
+            push( @data, $data );
+        }
 
-    return $c->render( status => 200, openapi => \@data );
+        return $c->render( status => 200, openapi => \@data );
+    } catch {
+        $c->unhandled_exception();
+    };
 }
 
 =head3 mark_arrived
@@ -261,62 +215,40 @@ Indicates the patron has arrived for the given curbside pickup appointment
 sub mark_arrived {
     my $c = shift->openapi->valid_input or return;
 
-    my $patron_id          = $c->validation->param('patron_id');
-    my $curbside_pickup_id = $c->validation->param('curbside_pickup_id');
+    my $patron_id = $c->param('patron_id');
 
-    my $user = $c->stash('koha.user');
-    unless ( $user->borrowernumber == $patron_id ) {
-        return $c->render(
-            status  => 403,
-            openapi => {
-                error => "Changing other patron's pickups is forbidden"
-            }
-        );
-    }
+    return try {
+        my $patron = Koha::Patrons->find($patron_id);
+        return $c->render_resource_not_found('Patron')
+            unless $patron;
 
-    my $patron = Koha::Patrons->find($patron_id);
+        my $curbside_pickup_id = $c->param('curbside_pickup_id');
 
-    unless ($patron) {
-        return $c->render(
-            status  => 404,
-            openapi => { error => "Patron not found." }
-        );
-    }
+        my $pickup = $patron->curbside_pickups->find($curbside_pickup_id);
+        return $c->render_resource_not_found('Curbside pickup')
+            unless $pickup;
 
-    my $pickup = Koha::CurbsidePickups->find($curbside_pickup_id);
+        unless ( $pickup->staged_datetime ) {
+            return $c->render(
+                status  => 403,
+                openapi => { error => "Curbside pickup not ready." }
+            );
+        }
 
-    unless ($pickup) {
-        return $c->render(
-            status  => 404,
-            openapi => { error => "Curbside pickup not found." }
-        );
-    }
+        if ( $pickup->arrival_datetime ) {
+            return $c->render(
+                status  => 403,
+                openapi => { error => "Curbside pickup already marked as arrived." }
+            );
+        }
 
-    unless ( $pickup->borrowernumber eq $patron->id ) {
-        return $c->render(
-            status  => 403,
-            openapi => { error => "Patron id does not match." }
-        );
-    }
+        $pickup->arrival_datetime( dt_from_string() );
+        $pickup->store();
 
-    unless ( $pickup->staged_datetime ) {
-        return $c->render(
-            status  => 403,
-            openapi => { error => "Curbside pickup not ready." }
-        );
-    }
-
-    if ( $pickup->arrival_datetime ) {
-        return $c->render(
-            status  => 403,
-            openapi => { error => "Curbside pickup already marked as arrived." }
-        );
-    }
-
-    $pickup->arrival_datetime( dt_from_string() );
-    $pickup->store();
-
-    return $c->render( status => 200, openapi => $pickup );
+        return $c->render( status => 200, openapi => $pickup );
+    } catch {
+        $c->unhandled_exception();
+    };
 }
 
 1;
