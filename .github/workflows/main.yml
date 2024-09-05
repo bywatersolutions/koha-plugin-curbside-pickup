@@ -99,27 +99,27 @@ jobs:
         cd ..
         pwd
         ls -alh
-        echo "`date`: Installing YAML::Syck, needed for Koha 20.11 and earlier"
-        docker exec koha_koha_1 apt-get install -y libyaml-syck-perl libemail-valid-perl libmojo-jwt-perl
-        while [ $? -ne 0 ]; do echo "INSTALL YAML::Syck" && docker exec koha_koha_1 apt-get install -y libyaml-syck-perl; done
-        echo "SLEEPING 3 MINUTES"
-        sleep 60
-        echo "1 MINUTE DONE"
-        sleep 60
-        echo "2 MINUTES DONE"
-        sleep 60
-        echo "3 MINUTES DONE"
-        echo "WAKING UP"
-        echo "DOCKER LOGS"
-        docker logs koha_koha_1 2>&1
-        echo "/DOCKER LOGS"
-        docker cp $GITHUB_REPO/. koha_koha_1:/var/lib/koha/kohadev/plugins
-        docker exec koha_koha_1 bash -c 'prove /var/lib/koha/kohadev/plugins/t'
+        echo "KTD: Waiting for KTD to warm up"
+        for i in $(seq 1 100); do
+            if docker exec koha-koha-1 bash -c '[ -e /ktd_ready ]'; then
+                printf "\n"
+                break
+            elif [ "$i" != "100" ]; then
+                printf "\rAttempt $i of 100"
+                sleep 1
+            else
+                printf "KTD: Timeout waiting for KTD to be ready (ERROR)"
+                exit 1
+            fi
+        done
+        echo "KTD: ready!"
+        docker cp $GITHUB_REPO/. koha-koha-1:/var/lib/koha/kohadev/plugins
+        docker exec koha-koha-1 bash -c 'prove /var/lib/koha/kohadev/plugins/t'
         
     - name: Post test cleanup
       run: |
         docker compose down
-        docker rm -f $(docker ps -a -f "name=koha_" -q)
+        docker rm -f $(docker ps -a -f "name=koha-" -q)
         docker volume prune -f
         docker image  prune -f
         rm docker-compose.yml
