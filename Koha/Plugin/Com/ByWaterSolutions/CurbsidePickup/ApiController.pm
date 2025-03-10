@@ -110,7 +110,7 @@ sub create_pickup {
 
             $pickup->notify_new_pickup();
 
-            return $c->render( status => 200, openapi => $c->object->to_api($pickup) );
+            return $c->render( status => 200, openapi => $c->objects->to_api($pickup) );
         }
     } catch {
         $c->unhandled_exception();
