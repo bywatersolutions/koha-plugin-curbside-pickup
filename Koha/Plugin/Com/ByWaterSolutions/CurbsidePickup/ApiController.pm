@@ -113,6 +113,7 @@ sub create_pickup {
             return $c->render( status => 200, openapi => $c->objects->to_api($pickup) );
         }
     } catch {
+        warn "Caught error: $_";
         $c->unhandled_exception();
     };
 }
@@ -142,6 +143,7 @@ sub delete_pickup {
 
         return $c->render_resource_deleted();
     } catch {
+        warn "Caught error: $_";
         $c->unhandled_exception();
     };
 }
@@ -177,6 +179,7 @@ sub all_pickups {
 
         return $c->render( status => 200, openapi => \@data );
     } catch {
+        warn "Caught error: $_";
         $c->unhandled_exception();
     };
 }
@@ -202,6 +205,7 @@ sub all_policies {
 
         return $c->render( status => 200, openapi => \@data );
     } catch {
+        warn "Caught error: $_";
         $c->unhandled_exception();
     };
 }
@@ -247,6 +251,7 @@ sub mark_arrived {
 
         return $c->render( status => 200, openapi => $pickup );
     } catch {
+        warn "Caught error: $_";
         $c->unhandled_exception();
     };
 }
